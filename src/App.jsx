@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
-import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink, Maximize } from 'lucide-react';
 import gamesData from './data/games.json';
 import proxiesData from './data/proxies.json';
 
 export default function App() {
   const [activeItem, setActiveItem] = useState(null); // unified state for game or proxy
   const [activeTab, setActiveTab] = useState('games');
+  const iframeContainerRef = useRef(null);
+
+  const toggleFullscreen = () => {
+    if (iframeContainerRef.current) {
+      if (!document.fullscreenElement) {
+        iframeContainerRef.current.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  };
 
   const renderProxies = () => (
     <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
@@ -191,6 +204,13 @@ export default function App() {
                     >
                       <ArrowLeft size={16} />
                     </button>
+                    <button 
+                      onClick={toggleFullscreen}
+                      className="flex items-center justify-center w-8 h-8 bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-400 hover:text-indigo-400 transition-colors shadow-sm cursor-pointer"
+                      title="Fullscreen"
+                    >
+                      <Maximize size={16} />
+                    </button>
                     <a
                       href={activeItem.url}
                       target="_blank"
@@ -215,7 +235,10 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="flex-1 w-full border border-slate-800 relative bg-slate-900 p-1 shadow-[0_0_20px_rgba(79,70,229,0.05)] overflow-hidden">
+              <div 
+                ref={iframeContainerRef}
+                className="flex-1 w-full border border-slate-800 relative bg-slate-900 p-1 shadow-[0_0_20px_rgba(79,70,229,0.05)] overflow-hidden"
+              >
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent z-10 pointer-events-none"></div>
                 <iframe 
                   src={activeItem.url} 

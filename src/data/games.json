@@ -82,5 +82,19 @@
     "developer": "Unknown",
     "genre": "Horror",
     "url": "https://cdn.vietdp.com/file/vietdp-games/games/t12026/five-nights-at-epsteins/index.html"
+  },
+  {
+    "id": "polytrack",
+    "title": "Polytrack",
+    "developer": "Unknown",
+    "genre": "Racing",
+    "url": "https://pizzaedition.win/assets/allgames/polytrack/index.html"
+  },
+  {
+    "id": "escape-road",
+    "title": "Escape Road",
+    "developer": "Unknown",
+    "genre": "Arcade",
+    "url": "https://pizzaedition.win/assets/allgames/escaperoad/index.html"
   }
 ]
