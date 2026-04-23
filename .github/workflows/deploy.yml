@@ -37,11 +37,11 @@ jobs:
           
       - name: Build
         run: |
-          npm install
+          npm ci
           npm run build
         
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
