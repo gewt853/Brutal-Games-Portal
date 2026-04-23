@@ -8,18 +8,19 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('games');
 
   const renderProxies = () => (
-    <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto">
+    <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
       <div className="mb-10 border-b border-slate-800 pb-6 flex items-end justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-600 rounded-none flex items-center justify-center font-bold text-white text-xl shadow-[0_0_15px_rgba(79,70,229,0.4)]">
-            <ShieldCheck />
+          <div className="w-12 h-12 rounded-none flex overflow-hidden border border-slate-900 shadow-[0_0_15px_rgba(79,70,229,0.4)]">
+            <div className="w-1/2 h-full bg-white"></div>
+            <div className="w-1/2 h-full bg-indigo-600"></div>
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-slate-200 mb-1 leading-none">
-              SECURE<span className="text-indigo-500">PROXIES.</span>
+              PROXIES<span className="text-indigo-500">.</span>
             </h1>
             <p className="text-[10px] font-mono text-indigo-400 tracking-[0.2em] uppercase">
-              {proxiesData.length} nodes available
+              {proxiesData.length} proxies available
             </p>
           </div>
         </div>
@@ -33,7 +34,7 @@ export default function App() {
           {proxiesData.map((proxy) => (
             <div
               key={proxy.id}
-              className="bg-slate-900 border border-slate-800 p-6 flex flex-col group transition-all hover:border-indigo-500/50 hover:bg-slate-800/50"
+              className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 p-6 flex flex-col group transition-all hover:border-indigo-500/50 hover:bg-indigo-500/10"
             >
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-lg font-black uppercase tracking-tight text-white group-hover:text-indigo-400 transition-colors">
@@ -71,7 +72,15 @@ export default function App() {
   );
 
   return (
-    <div className="h-screen w-full bg-slate-950 text-slate-200 font-sans flex flex-col overflow-hidden">
+    <div 
+      className="h-screen w-full text-slate-200 font-sans flex flex-col overflow-hidden relative"
+      style={{
+        backgroundImage: "linear-gradient(rgba(2, 6, 23, 0.65), rgba(2, 6, 23, 0.75)), url('https://mir-s3-cdn-cf.behance.net/project_modules/disp/9c3404112981173.601ebcc1dba2d.gif')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       {/* Header marquee */}
       <header className="h-12 border-b border-slate-800 bg-slate-900/50 flex items-center overflow-hidden shrink-0 z-50">
         <div className="marquee-track text-[10px] font-bold tracking-widest uppercase text-indigo-400">
@@ -89,7 +98,7 @@ export default function App() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Navigation Sidebar */}
-        <nav className="w-16 md:w-20 border-r border-slate-800 bg-slate-950 flex flex-col items-center py-8 shrink-0 z-40">
+        <nav className="w-16 md:w-20 border-r border-slate-800 bg-slate-950/40 backdrop-blur-sm flex flex-col items-center py-8 shrink-0 z-40">
           <button
             onClick={() => { setActiveTab('games'); setActiveItem(null); }}
             className={`p-4 transition-all ${activeTab === 'games' ? 'text-indigo-500 scale-110 shadow-[0_0_15px_rgba(79,70,229,0.2)]' : 'text-slate-600 hover:text-slate-400'}`}
@@ -109,13 +118,16 @@ export default function App() {
         <main className="flex-1 flex overflow-hidden relative border-l border-slate-900">
           {!activeItem ? (
             activeTab === 'games' ? (
-              <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto">
+            <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/20">
                 <div className="mb-10 border-b border-slate-800 pb-6 flex items-end justify-between">
                   <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 bg-indigo-600 rounded-none flex items-center justify-center font-bold text-white text-xl shadow-[0_0_15px_rgba(79,70,229,0.4)]">G</div>
+                     <div className="w-12 h-12 rounded-none flex overflow-hidden border border-slate-900 shadow-[0_0_15px_rgba(79,70,229,0.4)]">
+                       <div className="w-1/2 h-full bg-white"></div>
+                       <div className="w-1/2 h-full bg-indigo-600"></div>
+                     </div>
                      <div>
                       <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-slate-200 mb-1 leading-none">
-                        PLAY<span className="text-indigo-500">NOW.</span>
+                        GAMES<span className="text-indigo-500">.</span>
                       </h1>
                       <p className="text-[10px] font-mono text-indigo-400 tracking-[0.2em] uppercase">
                         {gamesData.length} games available
@@ -132,7 +144,7 @@ export default function App() {
                     <button
                       key={game.id}
                       onClick={() => setActiveItem({ ...game, type: 'game' })}
-                      className="bg-slate-900 border border-slate-800 p-2 flex flex-col text-left group cursor-pointer transition-all hover:border-indigo-500/50 hover:bg-slate-800/50 h-full"
+                      className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 p-2 flex flex-col text-left group cursor-pointer transition-all hover:border-indigo-500/50 hover:bg-indigo-500/10 h-full"
                     >
                       <div className="w-full bg-slate-800 mb-3 relative overflow-hidden aspect-video flex justify-center items-center shadow-inner">
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent"></div>
