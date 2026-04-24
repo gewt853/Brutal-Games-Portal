@@ -1,12 +1,30 @@
-import React, { useState, useRef } from 'react';
-import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink, Maximize } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink, Maximize, TrendingUp } from 'lucide-react';
 import gamesData from './data/games.json';
 import proxiesData from './data/proxies.json';
+import { incrementVisitCount, subscribeToVisitCount } from './services/firebase';
 
 export default function App() {
   const [activeItem, setActiveItem] = useState(null); // unified state for game or proxy
   const [activeTab, setActiveTab] = useState('games');
+  const [visitCount, setVisitCount] = useState(0);
   const iframeContainerRef = useRef(null);
+
+  useEffect(() => {
+    // Only increment visit count once per session
+    const hasVisited = sessionStorage.getItem('hasVisited');
+    if (!hasVisited) {
+      incrementVisitCount();
+      sessionStorage.setItem('hasVisited', 'true');
+    }
+
+    // Subscribe to updates for real-time counter
+    const unsubscribe = subscribeToVisitCount((count) => {
+      setVisitCount(count);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const toggleFullscreen = () => {
     if (iframeContainerRef.current) {
@@ -97,11 +115,11 @@ export default function App() {
       {/* Header marquee */}
       <header className="h-12 border-b border-slate-800 bg-slate-900/50 flex items-center overflow-hidden shrink-0 z-50">
         <div className="marquee-track text-[10px] font-bold tracking-widest uppercase text-indigo-400">
-          <span className="px-6">/// BRUTAL GAMES PORTAL ///</span>
+          <span className="px-6">/// NEBULA GAMES PORTAL ///</span>
           <span className="px-6 text-slate-500">UNBLOCKED & READY TO PLAY</span>
           <span className="px-6">/// NETWORK BYPASS ACTIVE ///</span>
           <span className="px-6 text-slate-500">STAY ANONYMOUS</span>
-          <span className="px-6">/// BRUTAL GAMES PORTAL ///</span>
+          <span className="px-6">/// NEBULA GAMES PORTAL ///</span>
           <span className="px-6 text-slate-500">UNBLOCKED & READY TO PLAY</span>
           <span className="px-6">/// NETWORK BYPASS ACTIVE ///</span>
           <span className="px-6 text-slate-500">STAY ANONYMOUS</span>
@@ -142,9 +160,18 @@ export default function App() {
                       <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-slate-200 mb-1 leading-none">
                         GAMES<span className="text-indigo-500">.</span>
                       </h1>
-                      <p className="text-[10px] font-mono text-indigo-400 tracking-[0.2em] uppercase">
-                        {gamesData.length} games available
-                      </p>
+                      <div className="flex items-center gap-4">
+                        <p className="text-[10px] font-mono text-indigo-400 tracking-[0.2em] uppercase">
+                          {gamesData.length} games available
+                        </p>
+                        <div className="h-4 w-px bg-slate-800 hidden sm:block"></div>
+                        <div className="flex items-center gap-2 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 rounded-sm">
+                          <TrendingUp size={10} className="text-indigo-400" />
+                          <span className="text-[10px] font-mono text-indigo-200 font-bold tracking-wider">
+                            {visitCount.toLocaleString()} VISITS
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="hidden md:block">
