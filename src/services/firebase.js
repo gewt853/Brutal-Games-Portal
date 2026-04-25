@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, updateDoc, increment, setDoc, onSnapshot } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, updateDoc, increment, setDoc, onSnapshot, collection, query, orderBy, serverTimestamp, deleteDoc, getDocs } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -31,5 +31,54 @@ export const subscribeToVisitCount = (callback) => {
     }
   }, (error) => {
     console.error('Error listening to visit count:', error);
+  });
+};
+
+// Session Management
+export const updateSession = async (sessionId) => {
+  const sessionRef = doc(db, 'sessions', sessionId);
+  try {
+    await setDoc(sessionRef, {
+      lastActive: serverTimestamp(),
+      userAgent: navigator.userAgent,
+      isOnline: true
+    }, { merge: true });
+  } catch (error) {
+    console.error('Error updating session:', error);
+  }
+};
+
+export const subscribeToSessions = (callback) => {
+  const q = query(collection(db, 'sessions'), orderBy('lastActive', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    const sessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(sessions);
+  });
+};
+
+// Ban Management
+export const checkBanStatus = async (sessionId) => {
+  const banRef = doc(db, 'bans', sessionId);
+  const banDoc = await getDoc(banRef);
+  return banDoc.exists();
+};
+
+export const banUser = async (sessionId) => {
+  const banRef = doc(db, 'bans', sessionId);
+  await setDoc(banRef, {
+    bannedAt: serverTimestamp(),
+  });
+};
+
+export const unbanUser = async (sessionId) => {
+  const banRef = doc(db, 'bans', sessionId);
+  await deleteDoc(banRef);
+};
+
+export const subscribeToBans = (callback) => {
+  const q = collection(db, 'bans');
+  return onSnapshot(q, (snapshot) => {
+    const bans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(bans);
   });
 };

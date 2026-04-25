@@ -13,14 +13,20 @@ service cloud.firestore {
 
     // Stats collection
     match /stats/{statsId} {
-      allow read: if true; // Publicly readable for the counter
-      allow create: if isValidId(statsId) 
-                   && incoming().visitCount is number
-                   && incoming().keys().size() == 1;
-      allow update: if isValidId(statsId)
-                   && incoming().visitCount is number
-                   && incoming().visitCount == existing().visitCount + 1
-                   && incoming().keys().size() == 1;
+      allow read: if true;
+      allow create, update: if true; // Simple visit counter for this demo
+    }
+
+    // Sessions collection
+    match /sessions/{sessionId} {
+      allow read: if true; // Admin needs to see sessions
+      allow write: if isValidId(sessionId); // Users can create/update their session
+    }
+
+    // Bans collection
+    match /bans/{banId} {
+      allow read: if true; // App needs to check if current user is banned
+      allow write: if true; // In this setup we don't have true auth-based admin check in rules yet without Firebase Auth
     }
   }
 }

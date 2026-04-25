@@ -11,12 +11,41 @@
         }
       },
       "required": ["visitCount"]
+    },
+    "session": {
+      "title": "User Session",
+      "description": "Active user session tracking.",
+      "type": "object",
+      "properties": {
+        "lastActive": { "type": "string", "format": "date-time" },
+        "userAgent": { "type": "string" },
+        "isOnline": { "type": "boolean" }
+      },
+      "required": ["lastActive", "isOnline"]
+    },
+    "ban": {
+      "title": "Banned User",
+      "description": "Users restricted from accessing the portal.",
+      "type": "object",
+      "properties": {
+        "bannedAt": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string" }
+      },
+      "required": ["bannedAt"]
     }
   },
   "firestore": {
     "stats/global": {
       "schema": "stats",
       "description": "Global statistics document."
+    },
+    "sessions/{sessionId}": {
+      "schema": "session",
+      "description": "Active user sessions."
+    },
+    "bans/{banId}": {
+      "schema": "ban",
+      "description": "Banned session IDs."
     }
   }
 }

@@ -1,30 +1,65 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink, Maximize, TrendingUp } from 'lucide-react';
+import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink, Maximize, TrendingUp, Lock, Settings } from 'lucide-react';
 import gamesData from './data/games.json';
 import proxiesData from './data/proxies.json';
-import { incrementVisitCount, subscribeToVisitCount } from './services/firebase';
+import { incrementVisitCount, subscribeToVisitCount, updateSession, checkBanStatus, subscribeToSessions, subscribeToBans, banUser, unbanUser } from './services/firebase';
 
 export default function App() {
   const [activeItem, setActiveItem] = useState(null); // unified state for game or proxy
   const [activeTab, setActiveTab] = useState('games');
   const [visitCount, setVisitCount] = useState(0);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [authError, setAuthError] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [bans, setBans] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
   const iframeContainerRef = useRef(null);
 
   useEffect(() => {
-    // Only increment visit count once per session
-    const hasVisited = sessionStorage.getItem('hasVisited');
-    if (!hasVisited) {
-      incrementVisitCount();
-      sessionStorage.setItem('hasVisited', 'true');
+    // Session ID management
+    let currentSessionId = localStorage.getItem('nebula_session_id');
+    if (!currentSessionId) {
+      currentSessionId = Math.random().toString(36).substring(2, 11).toUpperCase();
+      localStorage.setItem('nebula_session_id', currentSessionId);
+    }
+    setSessionId(currentSessionId);
+
+    // Initial checks
+    const init = async () => {
+      const banned = await checkBanStatus(currentSessionId);
+      if (banned) {
+        setIsBanned(true);
+        return;
+      }
+
+      const hasVisited = sessionStorage.getItem('hasVisited');
+      if (!hasVisited) {
+        incrementVisitCount();
+        sessionStorage.setItem('hasVisited', 'true');
+      }
+      updateSession(currentSessionId);
+    };
+
+    init();
+
+    // Subscriptions
+    const unsubscribeVisits = subscribeToVisitCount(setVisitCount);
+    let unsubscribeSessions = () => {};
+    let unsubscribeBans = () => {};
+
+    if (isAdminAuthenticated) {
+      unsubscribeSessions = subscribeToSessions(setSessions);
+      unsubscribeBans = subscribeToBans(setBans);
     }
 
-    // Subscribe to updates for real-time counter
-    const unsubscribe = subscribeToVisitCount((count) => {
-      setVisitCount(count);
-    });
-
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      unsubscribeVisits();
+      unsubscribeSessions();
+      unsubscribeBans();
+    };
+  }, [isAdminAuthenticated]);
 
   const toggleFullscreen = () => {
     if (iframeContainerRef.current) {
@@ -37,6 +72,186 @@ export default function App() {
       }
     }
   };
+
+  const handleAdminAuth = (e) => {
+    e.preventDefault();
+    if (adminPasswordInput === '1DoodleBugg4uu18!BoogieLoo!') {
+      setIsAdminAuthenticated(true);
+      setAuthError(false);
+    } else {
+      setAuthError(true);
+    }
+  };
+
+  const renderAdmin = () => (
+    <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
+      <div className="mb-10 border-b border-slate-800 pb-6 flex items-end justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-none flex items-center justify-center border border-slate-900 bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.4)]">
+            <Lock size={24} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-slate-200 mb-1 leading-none">
+              ADMIN PANEL<span className="text-indigo-500">.</span>
+            </h1>
+            <p className="text-[10px] font-mono text-indigo-400 tracking-[0.2em] uppercase">
+              System Configuration & Monitoring
+            </p>
+          </div>
+        </div>
+        <div className="hidden md:block">
+          <Settings size={32} className="text-slate-700" />
+        </div>
+      </div>
+
+      {!isAdminAuthenticated ? (
+        <div className="max-w-md mx-auto mt-12 p-8 bg-slate-900/60 border border-slate-800 backdrop-blur-md">
+          <h2 className="text-xl font-black uppercase tracking-tight text-white mb-6 flex items-center gap-2">
+            <Lock size={18} className="text-indigo-500" />
+            Authorization Required
+          </h2>
+          <form onSubmit={handleAdminAuth}>
+            <div className="mb-6">
+              <label className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Access Token</label>
+              <input
+                type="password"
+                value={adminPasswordInput}
+                onChange={(e) => setAdminPasswordInput(e.target.value)}
+                className={`w-full bg-slate-950 border ${authError ? 'border-red-500' : 'border-slate-800'} p-3 text-slate-200 font-mono text-sm focus:border-indigo-500 outline-none transition-all placeholder:text-slate-700`}
+                placeholder="••••••••••••••••"
+              />
+              {authError && (
+                <p className="text-[10px] text-red-500 mt-2 font-mono uppercase tracking-widest">Access Denied. Incorrect Token.</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 bg-indigo-600 text-[10px] text-white font-bold uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-[0_0_15px_rgba(79,70,229,0.2)]"
+            >
+              Verify Identity
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="space-y-8 pb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-slate-900/80 border border-slate-800 p-6 flex flex-col items-center justify-center text-center">
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-2">Total Site Visits</span>
+              <span className="text-4xl font-black text-white">{visitCount.toLocaleString()}</span>
+            </div>
+            <div className="bg-slate-900/80 border border-slate-800 p-6 flex flex-col items-center justify-center text-center">
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-2">Active Sessions</span>
+              <span className="text-4xl font-black text-indigo-400">{sessions.length}</span>
+            </div>
+            <div className="bg-slate-900/80 border border-slate-800 p-6 flex flex-col items-center justify-center text-center">
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em] mb-2">Banned Users</span>
+              <span className="text-4xl font-black text-red-400">{bans.length}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Session Manager */}
+            <div className="bg-slate-900/60 border border-slate-800 p-6">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-indigo-400 mb-6 flex items-center gap-2">
+                <List size={16} />
+                Session Manager
+              </h3>
+              <div className="space-y-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                {sessions.map(sess => (
+                  <div key={sess.id} className="p-4 bg-slate-950/50 border border-slate-800/50 flex items-center justify-between group">
+                    <div className="flex flex-col gap-1 overflow-hidden">
+                      <span className="text-[10px] font-mono text-white font-bold flex items-center gap-2">
+                        {sess.id}
+                        {sess.id === sessionId && <span className="px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 text-[8px] rounded-sm">YOU</span>}
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-500 uppercase truncate max-w-[200px]">
+                        {sess.userAgent}
+                      </span>
+                      <span className="text-[8px] font-mono text-slate-600">
+                        Active: {sess.lastActive?.toDate?.().toLocaleString() || 'Connecting...'}
+                      </span>
+                    </div>
+                    {sess.id !== sessionId && !bans.find(b => b.id === sess.id) && (
+                      <button
+                        onClick={() => banUser(sess.id)}
+                        className="px-3 py-1 bg-red-950/30 border border-red-900/30 text-[9px] font-mono text-red-500 uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        Ban
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ban Notebook */}
+            <div className="bg-slate-900/60 border border-slate-800 p-6">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-red-400 mb-6 flex items-center gap-2">
+                <ShieldCheck size={16} />
+                Banned Registry
+              </h3>
+              <div className="space-y-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                {bans.length > 0 ? bans.map(ban => (
+                  <div key={ban.id} className="p-4 bg-red-950/10 border border-red-900/20 flex items-center justify-between group">
+                    <div className="flex flex-col gap-1 overflow-hidden">
+                      <span className="text-[10px] font-mono text-red-400 font-bold">{ban.id}</span>
+                      <span className="text-[8px] font-mono text-slate-600">
+                        Banned on: {ban.bannedAt?.toDate?.().toLocaleString() || 'Recent'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => unbanUser(ban.id)}
+                      className="px-3 py-1 bg-slate-950/50 border border-slate-800 text-[9px] font-mono text-slate-400 uppercase tracking-widest hover:border-emerald-500 hover:text-emerald-400 transition-all"
+                    >
+                      Unban User
+                    </button>
+                  </div>
+                )) : (
+                  <div className="h-40 flex items-center justify-center text-slate-600 font-mono text-[10px] uppercase">
+                    No active bans in registry
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-900/60 border border-slate-800 p-8">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-indigo-400 mb-6 flex items-center gap-2">
+              <Info size={16} />
+              System Configuration
+            </h3>
+            <div className="space-y-4 font-mono text-[11px]">
+              <div className="flex justify-between border-b border-slate-800/50 pb-2">
+                <span className="text-slate-500 uppercase">Core Logic</span>
+                <span className="text-emerald-400">OPERATIONAL</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-800/50 pb-2">
+                <span className="text-slate-500 uppercase">Database Link</span>
+                <span className="text-emerald-400">ENCRYPTED</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-800/50 pb-2">
+                <span className="text-slate-500 uppercase">Admin Access</span>
+                <span className="text-indigo-400 font-bold">AUTHORIZED</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-800/50 pb-2">
+                <span className="text-slate-500 uppercase">Local Session ID</span>
+                <span className="text-slate-400 truncate ml-4 tracking-tighter">
+                  {sessionId}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => { setIsAdminAuthenticated(false); setAdminPasswordInput(''); }}
+            className="px-6 py-2 border border-slate-800 text-[9px] font-mono text-slate-500 hover:border-red-500/50 hover:text-red-400 transition-all uppercase tracking-[0.2em]"
+          >
+            Revoke Access / Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   const renderProxies = () => (
     <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
@@ -102,6 +317,24 @@ export default function App() {
     </div>
   );
 
+  if (isBanned) {
+    return (
+      <div className="h-screen w-full bg-slate-950 flex items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full border border-red-900/50 p-10 bg-red-950/10 backdrop-blur-xl">
+          <ShieldCheck size={64} className="text-red-500 mx-auto mb-6" />
+          <h1 className="text-3xl font-black uppercase text-white mb-2 tracking-tighter">Access Denied</h1>
+          <p className="text-slate-400 font-mono text-xs uppercase tracking-widest mb-8">
+            This session identifier has been restricted from accessing the nebula network.
+          </p>
+          <div className="py-2 px-4 bg-slate-900 border border-slate-800 inline-block">
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">ID: </span>
+            <span className="text-[10px] font-mono text-red-500 font-bold">{sessionId}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="h-screen w-full text-slate-200 font-sans flex flex-col overflow-hidden relative"
@@ -143,6 +376,13 @@ export default function App() {
             title="Proxies"
           >
             <ShieldCheck size={24} strokeWidth={activeTab === 'proxies' ? 3 : 2} />
+          </button>
+          <button
+            onClick={() => { setActiveTab('admin'); setActiveItem(null); }}
+            className={`p-4 mt-4 transition-all ${activeTab === 'admin' ? 'text-indigo-500 scale-110 shadow-[0_0_15px_rgba(79,70,229,0.2)]' : 'text-slate-600 hover:text-slate-400'}`}
+            title="Admin"
+          >
+            <Lock size={24} strokeWidth={activeTab === 'admin' ? 3 : 2} />
           </button>
         </nav>
 
@@ -216,8 +456,10 @@ export default function App() {
                   ))}
                 </div>
               </div>
-            ) : (
+            ) : activeTab === 'proxies' ? (
               renderProxies()
+            ) : (
+              renderAdmin()
             )
           ) : (
             <div className="flex flex-col flex-1 w-full max-w-6xl mx-auto p-4 md:p-8 overflow-hidden h-full">
