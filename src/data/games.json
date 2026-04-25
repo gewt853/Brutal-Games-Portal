@@ -124,5 +124,19 @@
     "developer": "Aladdin X",
     "genre": "Puzzle",
     "url": "https://playsuikagame.com/"
+  },
+  {
+    "id": "impossible-quiz",
+    "title": "The Impossible Quiz",
+    "developer": "Splapp-me-do",
+    "genre": "Puzzle",
+    "url": "https://theimpossiblequiz-online.github.io/file/"
+  },
+  {
+    "id": "worlds-hardest-game",
+    "title": "World's Hardest Game",
+    "developer": "Stephen Critoph",
+    "genre": "Skill",
+    "url": "https://dnrweqffuwjtx.cloudfront.net/games/2024/flash/worlds-hardest-game/index.html"
   }
 ]
