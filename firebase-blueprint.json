@@ -19,7 +19,8 @@
       "properties": {
         "lastActive": { "type": "string", "format": "date-time" },
         "userAgent": { "type": "string" },
-        "isOnline": { "type": "boolean" }
+        "isOnline": { "type": "boolean" },
+        "username": { "type": "string" }
       },
       "required": ["lastActive", "isOnline"]
     },

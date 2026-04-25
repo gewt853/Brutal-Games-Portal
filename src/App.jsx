@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink, Maximize, TrendingUp, Lock, Settings } from 'lucide-react';
+import { Play, ArrowLeft, Gamepad2, Info, ShieldCheck, Globe, List, ExternalLink, Maximize, TrendingUp, Lock, Settings, User } from 'lucide-react';
 import gamesData from './data/games.json';
 import proxiesData from './data/proxies.json';
-import { incrementVisitCount, subscribeToVisitCount, updateSession, checkBanStatus, subscribeToSessions, subscribeToBans, banUser, unbanUser } from './services/firebase';
+import { incrementVisitCount, subscribeToVisitCount, updateSession, checkBanStatus, subscribeToSessions, subscribeToBans, banUser, unbanUser, getSession } from './services/firebase';
 
 export default function App() {
   const [activeItem, setActiveItem] = useState(null); // unified state for game or proxy
@@ -15,6 +15,9 @@ export default function App() {
   const [sessions, setSessions] = useState([]);
   const [bans, setBans] = useState([]);
   const [sessionId, setSessionId] = useState(null);
+  const [username, setUsername] = useState('');
+  const [showNameEntry, setShowNameEntry] = useState(false);
+  const [nameInput, setNameInput] = useState('');
   const iframeContainerRef = useRef(null);
 
   useEffect(() => {
@@ -34,12 +37,24 @@ export default function App() {
         return;
       }
 
+      // Check for existing session/username
+      const sessionData = await getSession(currentSessionId);
+      if (sessionData && sessionData.username) {
+        setUsername(sessionData.username);
+        setShowNameEntry(false);
+      } else {
+        setShowNameEntry(true);
+      }
+
       const hasVisited = sessionStorage.getItem('hasVisited');
       if (!hasVisited) {
         incrementVisitCount();
         sessionStorage.setItem('hasVisited', 'true');
       }
-      updateSession(currentSessionId);
+      
+      if (sessionData && sessionData.username) {
+        updateSession(currentSessionId, sessionData.username);
+      }
     };
 
     init();
@@ -80,6 +95,15 @@ export default function App() {
       setAuthError(false);
     } else {
       setAuthError(true);
+    }
+  };
+
+  const handleNameSubmit = (e) => {
+    e.preventDefault();
+    if (nameInput.trim().length >= 2) {
+      setUsername(nameInput.trim());
+      updateSession(sessionId, nameInput.trim());
+      setShowNameEntry(false);
     }
   };
 
@@ -161,7 +185,8 @@ export default function App() {
                   <div key={sess.id} className="p-4 bg-slate-950/50 border border-slate-800/50 flex items-center justify-between group">
                     <div className="flex flex-col gap-1 overflow-hidden">
                       <span className="text-[10px] font-mono text-white font-bold flex items-center gap-2">
-                        {sess.id}
+                        {sess.username || 'Anonymous'}
+                        <span className="text-slate-500 font-normal">({sess.id})</span>
                         {sess.id === sessionId && <span className="px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 text-[8px] rounded-sm">YOU</span>}
                       </span>
                       <span className="text-[9px] font-mono text-slate-500 uppercase truncate max-w-[200px]">
@@ -194,7 +219,10 @@ export default function App() {
                 {bans.length > 0 ? bans.map(ban => (
                   <div key={ban.id} className="p-4 bg-red-950/10 border border-red-900/20 flex items-center justify-between group">
                     <div className="flex flex-col gap-1 overflow-hidden">
-                      <span className="text-[10px] font-mono text-red-400 font-bold">{ban.id}</span>
+                      <span className="text-[10px] font-mono text-red-400 font-bold">
+                        {sessions.find(s => s.id === ban.id)?.username || 'Banned Operator'} 
+                        <span className="text-slate-600 font-normal ml-2">({ban.id})</span>
+                      </span>
                       <span className="text-[8px] font-mono text-slate-600">
                         Banned on: {ban.bannedAt?.toDate?.().toLocaleString() || 'Recent'}
                       </span>
@@ -329,6 +357,72 @@ export default function App() {
           <div className="py-2 px-4 bg-slate-900 border border-slate-800 inline-block">
             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">ID: </span>
             <span className="text-[10px] font-mono text-red-500 font-bold">{sessionId}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showNameEntry) {
+    return (
+      <div 
+        className="h-screen w-full bg-slate-950 flex items-center justify-center p-6"
+        style={{
+          backgroundImage: "linear-gradient(rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.95)), url('https://mir-s3-cdn-cf.behance.net/project_modules/disp/9c3404112981173.601ebcc1dba2d.gif')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="max-w-md w-full bg-slate-900/80 border border-slate-800 p-10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <User size={120} />
+          </div>
+          
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-10 h-10 border border-indigo-500 flex items-center justify-center bg-indigo-500/10">
+              <User size={20} className="text-indigo-500" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">Identity Check</h1>
+              <p className="text-[9px] font-mono text-indigo-400 uppercase tracking-[0.2em] mt-1">Personnel Registration</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleNameSubmit} className="relative z-10">
+            <div className="mb-8">
+              <label className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-3">Operator Codename</label>
+              <input
+                type="text"
+                autoFocus
+                required
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 p-4 text-slate-200 font-mono text-sm focus:border-indigo-500 outline-none transition-all placeholder:text-slate-800"
+                placeholder="Enter Username..."
+                maxLength={20}
+              />
+              <p className="text-[8px] text-slate-600 mt-2 font-mono uppercase tracking-widest italic">
+                * This identifier will be linked to your session token
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-4 bg-indigo-600 text-[10px] text-white font-bold uppercase tracking-[0.3em] hover:bg-indigo-500 transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
+              disabled={nameInput.trim().length < 2}
+            >
+              Initialize Session
+              <Play size={14} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </form>
+          
+          <div className="mt-10 pt-6 border-t border-slate-800/50 flex justify-between items-center opacity-40">
+             <div className="flex gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-1 h-1 bg-slate-500"></div>
+                ))}
+             </div>
+             <span className="text-[8px] font-mono text-slate-500 uppercase">SYS_VERSION_1.0.4</span>
           </div>
         </div>
       </div>

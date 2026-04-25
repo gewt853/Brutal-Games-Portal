@@ -35,17 +35,27 @@ export const subscribeToVisitCount = (callback) => {
 };
 
 // Session Management
-export const updateSession = async (sessionId) => {
+export const updateSession = async (sessionId, username = null) => {
   const sessionRef = doc(db, 'sessions', sessionId);
   try {
-    await setDoc(sessionRef, {
+    const data = {
       lastActive: serverTimestamp(),
       userAgent: navigator.userAgent,
       isOnline: true
-    }, { merge: true });
+    };
+    if (username) {
+      data.username = username;
+    }
+    await setDoc(sessionRef, data, { merge: true });
   } catch (error) {
     console.error('Error updating session:', error);
   }
+};
+
+export const getSession = async (sessionId) => {
+  const sessionRef = doc(db, 'sessions', sessionId);
+  const sessionDoc = await getDoc(sessionRef);
+  return sessionDoc.exists() ? sessionDoc.data() : null;
 };
 
 export const subscribeToSessions = (callback) => {
