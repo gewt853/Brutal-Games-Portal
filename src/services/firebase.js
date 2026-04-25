@@ -3,7 +3,7 @@ import { getFirestore, doc, getDoc, updateDoc, increment, setDoc, onSnapshot, co
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 export const incrementVisitCount = async () => {
   const statsRef = doc(db, 'stats', 'global');
