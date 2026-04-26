@@ -1002,9 +1002,21 @@ export default function App() {
           <p className="text-slate-400 font-mono text-xs uppercase tracking-widest mb-8">
             This session identifier has been restricted from accessing the nebula network.
           </p>
-          <div className="py-2 px-4 bg-slate-900 border border-slate-800 inline-block">
+          <div className="py-2 px-4 bg-slate-900 border border-slate-800 inline-block mb-8">
             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">ID: </span>
             <span className="text-[10px] font-mono text-red-500 font-bold">{sessionId}</span>
+          </div>
+
+          <div>
+             <a 
+               href="https://forms.gle/T5ESZpQPGDP2xSfZ7"
+               target="_blank"
+               rel="noopener noreferrer"
+               className="inline-flex items-center gap-2 px-6 py-3 bg-red-600/10 border border-red-600/30 text-red-500 text-[10px] font-mono font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all group"
+             >
+               <MessageSquarePlus size={14} className="group-hover:scale-110 transition-transform" />
+               File Ban Appeal
+             </a>
           </div>
         </div>
       </div>
@@ -1228,14 +1240,14 @@ export default function App() {
       {/* Header marquee */}
       <header className="h-12 border-b border-slate-800 bg-slate-900/50 flex items-center overflow-hidden shrink-0 z-50">
         <div className="marquee-track text-[10px] font-bold tracking-widest uppercase text-indigo-400">
-          <span className="px-6">/// NEBULA GAMES PORTAL ///</span>
-          <span className="px-6 text-slate-500">UNBLOCKED & READY TO PLAY</span>
-          <span className="px-6">/// NETWORK BYPASS ACTIVE ///</span>
-          <span className="px-6 text-slate-500">STAY ANONYMOUS</span>
-          <span className="px-6">/// NEBULA GAMES PORTAL ///</span>
-          <span className="px-6 text-slate-500">UNBLOCKED & READY TO PLAY</span>
-          <span className="px-6">/// NETWORK BYPASS ACTIVE ///</span>
-          <span className="px-6 text-slate-500">STAY ANONYMOUS</span>
+          <span className="px-6">/// Nebula Games Portal ///</span>
+          <span className="px-6 text-slate-500">Nebula Network™</span>
+          <span className="px-6">/// Nebula Games Portal ///</span>
+          <span className="px-6 text-slate-500">Nebula Network™</span>
+          <span className="px-6">/// Nebula Games Portal ///</span>
+          <span className="px-6 text-slate-500">Nebula Network™</span>
+          <span className="px-6">/// Nebula Games Portal ///</span>
+          <span className="px-6 text-slate-500">Nebula Network™</span>
         </div>
       </header>
 
