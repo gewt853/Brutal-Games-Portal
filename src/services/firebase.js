@@ -14,12 +14,26 @@ import {
   deleteDoc, 
   getDocs,
   deleteField,
-  where
+  where,
+  getDocFromServer
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+// Connection Validation
+async function testConnection() {
+  try {
+    // Testing connection to a dummy path
+    await getDocFromServer(doc(db, 'system', 'connection_test')).catch(() => {});
+  } catch (error) {
+    if(error instanceof Error && error.message.includes('the client is offline')) {
+      console.error("Please check your Firebase configuration. Network is offline.");
+    }
+  }
+}
+testConnection();
 
 // Error Handling helper
 export const OperationType = {
@@ -133,12 +147,12 @@ export const getUsernameSession = async (username) => {
 // Profile & Progressions
 export const updateUsername = async (sessionId, username) => {
   const sessionRef = doc(db, 'sessions', sessionId);
-  await updateDoc(sessionRef, { username });
+  await setDoc(sessionRef, { username }, { merge: true });
 };
 
 export const setUserPassword = async (sessionId, password) => {
   const sessionRef = doc(db, 'sessions', sessionId);
-  await updateDoc(sessionRef, { password });
+  await setDoc(sessionRef, { password }, { merge: true });
 };
 
 export const saveGameProgress = async (sessionId, gameId, progression) => {

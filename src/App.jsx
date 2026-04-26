@@ -15,6 +15,7 @@ import {
   updateUsername,
   setGamePassword,
   clearGamePassword,
+  updateGamePlayTime,
   checkUsernameUnique,
   getUsernameSession,
   setUserPassword,
@@ -77,6 +78,10 @@ export default function App() {
       }
 
       const sessionData = await getSession(currentSessionId);
+      
+      // Always update session to register current activity and userAgent
+      updateSession(currentSessionId, sessionData?.username || null);
+
       if (sessionData && sessionData.username) {
         setUsername(sessionData.username);
         setShowNameEntry(false);
@@ -89,11 +94,14 @@ export default function App() {
         incrementVisitCount();
         sessionStorage.setItem('hasVisited', 'true');
       }
-      
-      if (sessionData && sessionData.username) {
-        updateSession(currentSessionId, sessionData.username);
-      }
     };
+
+    // Fullscreen exit sync
+    const handleFsChange = () => {
+      // We don't necessarily need to do anything here if we don't have state for isFullScreen,
+      // but it's good to have for future-proofing or if we wanted to sync state.
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
 
     init();
 
@@ -151,14 +159,19 @@ export default function App() {
   };
 
   const handleCloseItem = async () => {
-    if (activeItem && activeItem.type === 'game' && playStartTimeRef.current) {
-      const seconds = Math.floor((Date.now() - playStartTimeRef.current) / 1000);
-      if (seconds > 0) {
-        await updateGamePlayTime(sessionId, activeItem.id, seconds);
+    try {
+      if (activeItem && activeItem.type === 'game' && playStartTimeRef.current) {
+        const seconds = Math.floor((Date.now() - playStartTimeRef.current) / 1000);
+        if (seconds > 0) {
+          await updateGamePlayTime(sessionId, activeItem.id, seconds);
+        }
       }
+    } catch (err) {
+      console.error("Failed to update play time:", err);
+    } finally {
+      setActiveItem(null);
+      playStartTimeRef.current = null;
     }
-    setActiveItem(null);
-    playStartTimeRef.current = null;
   };
 
   const handleLockVerify = (e) => {
