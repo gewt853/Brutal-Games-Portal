@@ -38,7 +38,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('games');
   const [visitCount, setVisitCount] = useState(0);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [adminPrivileges, setAdminPrivileges] = useState({ banUser: false, viewUser: false, fullAccess: false });
+  const [adminPrivileges, setAdminPrivileges] = useState({ banUser: false, viewUser: false, manageAdmins: false, fullAccess: false });
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [authError, setAuthError] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
@@ -179,7 +179,7 @@ export default function App() {
               setAdminPrivileges(sessionData.privileges);
             } else if (currentSessionId === OWNER_ID) {
               // Owner always has full access
-              setAdminPrivileges({ banUser: true, viewUser: true, fullAccess: true });
+              setAdminPrivileges({ banUser: true, viewUser: true, manageAdmins: true, fullAccess: true });
             }
           }
         }
@@ -220,13 +220,13 @@ export default function App() {
           if (data.privileges) {
             setAdminPrivileges(data.privileges);
           } else if (currentSessionId === OWNER_ID) {
-            setAdminPrivileges({ banUser: true, viewUser: true, fullAccess: true });
+            setAdminPrivileges({ banUser: true, viewUser: true, manageAdmins: true, fullAccess: true });
           }
         } else {
           // If they were admin and lost it, remove it
           if (!data.isAdmin && currentSessionId !== OWNER_ID) {
             setIsAdminAuthenticated(false);
-            setAdminPrivileges({ banUser: false, viewUser: false, fullAccess: false });
+            setAdminPrivileges({ banUser: false, viewUser: false, manageAdmins: false, fullAccess: false });
           }
         }
 
@@ -1119,8 +1119,8 @@ export default function App() {
                         </div>
                     </div>
                     
-                    {/* Admin Privilege Management (Owner Only) */}
-                    {sessionId === OWNER_ID && displaySess.id !== OWNER_ID && (
+                    {/* Admin Privilege Management (Owner or Authorized Admin) */}
+                    {(sessionId === OWNER_ID || (isAdminAuthenticated && hasPrivilege('manageAdmins'))) && displaySess.id !== OWNER_ID && (
                       <div className="p-4 bg-slate-950 border border-slate-800/30">
                         <span className={`text-[8px] font-mono ${t.text} uppercase block mb-3 border-b ${t.border} pb-1 font-bold`}>Privilege Escalation</span>
                         <div className="space-y-4">
@@ -1132,9 +1132,9 @@ export default function App() {
                             <button 
                               onClick={() => {
                                 if (displaySess.isAdmin) {
-                                  revokeAdminPrivileges(displaySess.id);
+                                  revokeAdminPrivileges(displaySess.id, sessionId);
                                 } else {
-                                  grantAdminPrivileges(displaySess.id, { banUser: false, viewUser: false, fullAccess: false });
+                                  grantAdminPrivileges(displaySess.id, { banUser: false, viewUser: false, fullAccess: false, manageAdmins: false }, sessionId);
                                 }
                               }}
                               className={`px-3 py-1 text-[8px] font-mono border ${displaySess.isAdmin ? 'border-red-500 text-red-500 bg-red-500/10' : `border-${t.accent} ${t.text} ${t.bg}`} uppercase transition-all`}
@@ -1148,6 +1148,7 @@ export default function App() {
                               {[
                                 { id: 'banUser', label: 'Ban Power', detail: 'Restrict identities' },
                                 { id: 'viewUser', label: 'Inspector Power', detail: 'View full session data' },
+                                { id: 'manageAdmins', label: 'Management Power', detail: 'Revoke/Grant privileges' },
                                 { id: 'fullAccess', label: 'Full Node Access', detail: 'All admin modules' }
                               ].map(priv => (
                                 <div key={priv.id} className="flex items-center justify-between">
@@ -1161,7 +1162,7 @@ export default function App() {
                                       grantAdminPrivileges(displaySess.id, {
                                         ...currentPrivs,
                                         [priv.id]: !currentPrivs[priv.id]
-                                      });
+                                      }, sessionId);
                                     }}
                                     className={`px-2 py-0.5 text-[8px] font-mono border ${displaySess.privileges?.[priv.id] ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10' : 'border-slate-700 text-slate-500'} uppercase transition-all`}
                                   >

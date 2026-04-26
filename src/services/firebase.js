@@ -238,7 +238,7 @@ export const checkBanStatus = async (sessionId) => {
   return banDoc.exists();
 };
 
-export const grantAdminPrivileges = async (sessionId, privileges) => {
+export const grantAdminPrivileges = async (sessionId, privileges, actorId = 'SYSTEM') => {
   const sessionRef = doc(db, 'sessions', sessionId);
   try {
     await setDoc(sessionRef, {
@@ -249,15 +249,15 @@ export const grantAdminPrivileges = async (sessionId, privileges) => {
     await createAuditLog({
       action: 'PRIVILEGE_GRANT',
       targetId: sessionId,
-      actorId: 'SYSTEM',
-      details: `Granted: ${Object.entries(privileges).filter(([_, v]) => v).map(([k]) => k).join(', ')}`
+      actorId: actorId,
+      details: privileges ? `Granted: ${Object.entries(privileges).filter(([_, v]) => v).map(([k]) => k).join(', ')}` : 'Basic Admin Access'
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `sessions/${sessionId}`);
   }
 };
 
-export const revokeAdminPrivileges = async (sessionId) => {
+export const revokeAdminPrivileges = async (sessionId, actorId = 'SYSTEM') => {
   const sessionRef = doc(db, 'sessions', sessionId);
   try {
     await updateDoc(sessionRef, {
@@ -268,7 +268,7 @@ export const revokeAdminPrivileges = async (sessionId) => {
     await createAuditLog({
       action: 'PRIVILEGE_REVOKE',
       targetId: sessionId,
-      actorId: 'SYSTEM',
+      actorId: actorId,
       details: 'Revoked all administrative privileges'
     });
   } catch (error) {
