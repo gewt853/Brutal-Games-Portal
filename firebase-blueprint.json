@@ -45,6 +45,14 @@
           "type": "boolean",
           "description": "Whether this user has admin status."
         },
+        "agreedSiteRules": {
+          "type": "boolean",
+          "description": "Whether this user agreed to the general site rules."
+        },
+        "agreedChatRules": {
+          "type": "boolean",
+          "description": "Whether this user agreed to the chat-specific rules."
+        },
         "privileges": {
           "type": "object",
           "properties": {
@@ -73,9 +81,36 @@
       "type": "object",
       "properties": {
         "bannedAt": { "type": "string", "format": "date-time" },
-        "reason": { "type": "string" }
+        "reason": { "type": "string" },
+        "ruleBroken": { "type": "string" }
       },
-      "required": ["bannedAt"]
+      "required": ["bannedAt", "reason"]
+    },
+    "audit_log": {
+      "title": "Audit Log",
+      "description": "Records of administrative or critical user actions.",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "action": { "type": "string" },
+        "targetId": { "type": "string" },
+        "actorId": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["timestamp", "action", "targetId", "actorId"]
+    },
+    "message": {
+      "title": "Chat Message",
+      "description": "A message sent in the global chat.",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "system": { "type": "boolean" }
+      },
+      "required": ["text", "senderId", "senderName", "timestamp"]
     }
   },
   "firestore": {
@@ -94,6 +129,14 @@
     "game_stats/{gameId}": {
       "schema": "game_stats",
       "description": "Aggregate statistics for specific games."
+    },
+    "messages/{messageId}": {
+      "schema": "message",
+      "description": "Global chat messages."
+    },
+    "audit_logs/{logId}": {
+      "schema": "audit_log",
+      "description": "System-wide audit logs."
     }
   }
 }

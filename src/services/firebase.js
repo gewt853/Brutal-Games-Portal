@@ -15,7 +15,8 @@ import {
   getDocs,
   deleteField,
   where,
-  getDocFromServer
+  getDocFromServer,
+  limit
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -147,12 +148,32 @@ export const getUsernameSession = async (username) => {
 // Profile & Progressions
 export const updateUsername = async (sessionId, username) => {
   const sessionRef = doc(db, 'sessions', sessionId);
-  await setDoc(sessionRef, { username }, { merge: true });
+  try {
+    await setDoc(sessionRef, { username }, { merge: true });
+    await createAuditLog({
+      action: 'NAME_CHANGE',
+      targetId: sessionId,
+      actorId: sessionId,
+      details: `Changed identity to: ${username}`
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `sessions/${sessionId}`);
+  }
 };
 
 export const setUserPassword = async (sessionId, password) => {
   const sessionRef = doc(db, 'sessions', sessionId);
-  await setDoc(sessionRef, { password }, { merge: true });
+  try {
+    await setDoc(sessionRef, { password }, { merge: true });
+    await createAuditLog({
+      action: 'SECURITY_INIT',
+      targetId: sessionId,
+      actorId: sessionId,
+      details: 'Initialized security cipher/password'
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `sessions/${sessionId}`);
+  }
 };
 
 export const saveGameProgress = async (sessionId, gameId, progression) => {
@@ -209,25 +230,60 @@ export const checkBanStatus = async (sessionId) => {
 
 export const grantAdminPrivileges = async (sessionId, privileges) => {
   const sessionRef = doc(db, 'sessions', sessionId);
-  await setDoc(sessionRef, {
-    isAdmin: true,
-    privileges: privileges
-  }, { merge: true });
+  try {
+    await setDoc(sessionRef, {
+      isAdmin: true,
+      privileges: privileges
+    }, { merge: true });
+    
+    await createAuditLog({
+      action: 'PRIVILEGE_GRANT',
+      targetId: sessionId,
+      actorId: 'SYSTEM',
+      details: `Granted: ${Object.entries(privileges).filter(([_, v]) => v).map(([k]) => k).join(', ')}`
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `sessions/${sessionId}`);
+  }
 };
 
 export const revokeAdminPrivileges = async (sessionId) => {
   const sessionRef = doc(db, 'sessions', sessionId);
-  await updateDoc(sessionRef, {
-    isAdmin: deleteField(),
-    privileges: deleteField()
-  });
+  try {
+    await updateDoc(sessionRef, {
+      isAdmin: deleteField(),
+      privileges: deleteField()
+    });
+    
+    await createAuditLog({
+      action: 'PRIVILEGE_REVOKE',
+      targetId: sessionId,
+      actorId: 'SYSTEM',
+      details: 'Revoked all administrative privileges'
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `sessions/${sessionId}`);
+  }
 };
 
-export const banUser = async (sessionId) => {
+export const banUser = async (sessionId, reason, ruleBroken, actorId) => {
   const banRef = doc(db, 'bans', sessionId);
-  await setDoc(banRef, {
-    bannedAt: serverTimestamp(),
-  });
+  try {
+    await setDoc(banRef, {
+      bannedAt: serverTimestamp(),
+      reason,
+      ruleBroken
+    });
+    
+    await createAuditLog({
+      action: 'BAN_USER',
+      targetId: sessionId,
+      actorId: actorId,
+      details: `Reason: ${reason} | Rule: ${ruleBroken}`
+    });
+  } catch (error) {
+    console.error('Error banning user:', error);
+  }
 };
 
 export const unbanUser = async (sessionId) => {
@@ -297,5 +353,78 @@ export const subscribeToGameStats = (callback) => {
     callback(stats);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, 'game_stats');
+  });
+};
+
+// Chat Management
+export const sendMessage = async (sessionId, username, text, isSystem = false) => {
+  const messageId = Math.random().toString(36).substring(2, 11).toUpperCase();
+  const messageRef = doc(db, 'messages', messageId);
+  try {
+    await setDoc(messageRef, {
+      text,
+      senderId: sessionId,
+      senderName: username,
+      timestamp: serverTimestamp(),
+      system: isSystem
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, `messages/${messageId}`);
+  }
+};
+
+export const subscribeToMessages = (callback, limitCount = 50) => {
+  const q = query(
+    collection(db, 'messages'), 
+    orderBy('timestamp', 'desc'), 
+    limit(limitCount)
+  );
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(messages.reverse());
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, 'messages');
+  });
+};
+
+export const setAgreedChatRules = async (sessionId) => {
+  const sessionRef = doc(db, 'sessions', sessionId);
+  await updateDoc(sessionRef, {
+    agreedChatRules: true
+  });
+};
+
+export const setAgreedSiteRules = async (sessionId) => {
+  const sessionRef = doc(db, 'sessions', sessionId);
+  await updateDoc(sessionRef, {
+    agreedSiteRules: true
+  });
+};
+
+export const createAuditLog = async (logData) => {
+  const logId = Math.random().toString(36).substring(2, 11).toUpperCase();
+  const logRef = doc(db, 'audit_logs', logId);
+  try {
+    await setDoc(logRef, {
+      ...logData,
+      timestamp: serverTimestamp(),
+      details: logData.details || ''
+    });
+  } catch (error) {
+    console.error('Error creating audit log:', error);
+  }
+};
+
+export const subscribeToAuditLogs = (targetId, callback) => {
+  const q = query(
+    collection(db, 'audit_logs'), 
+    where('targetId', '==', targetId),
+    orderBy('timestamp', 'desc')
+  );
+  return onSnapshot(q, (snapshot) => {
+    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(logs);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, `audit_logs/${targetId}`);
   });
 };

@@ -25,6 +25,30 @@ service cloud.firestore {
         && data.ratingCount is number;
     }
 
+    function isValidMessage(data) {
+      return data.keys().hasAll(['text', 'senderId', 'senderName', 'timestamp'])
+        && data.text is string && data.text.size() <= 1000
+        && data.senderId is string && data.senderId.size() <= 128
+        && data.senderName is string && data.senderName.size() <= 64
+        && data.timestamp == request.time;
+    }
+
+    function isValidBan(data) {
+      return data.keys().hasAll(['bannedAt', 'reason', 'ruleBroken'])
+        && data.bannedAt == request.time
+        && data.reason is string && data.reason.size() <= 500
+        && data.ruleBroken is string && data.ruleBroken.size() <= 200;
+    }
+
+    function isValidLog(data) {
+      return data.keys().hasAll(['timestamp', 'action', 'targetId', 'actorId', 'details'])
+        && data.timestamp == request.time
+        && data.action is string && data.action.size() <= 100
+        && data.targetId is string && data.targetId.size() <= 128
+        && data.actorId is string && data.actorId.size() <= 128
+        && data.details is string && data.details.size() <= 1000;
+    }
+
     // Stats collection (Visit Count)
     match /stats/{statsId} {
       allow read: if isValidId(statsId);
@@ -46,12 +70,7 @@ service cloud.firestore {
       allow update: if isValidId(sessionId) && (
         // Only owner can update privileges
         (incoming().diff(existing()).affectedKeys().hasAny(['isAdmin', 'privileges']) && request.auth == null && sessionId != '4CDVMIEU6') == false
-        // Note: request.auth is null in this sandbox, we use sessionId to identify owner on client
-        // In this environment, we rely on the client logic to prevent unauthorized privilege elevation 
-        // as we don't have proper Firebase Auth setup in the way standard apps do (it's using anonymous-like logic).
-        // Since we can't reliably distinguish owner server-side without real Auth AND we have a blank match for owner,
-        // we will keep it flexible but add common-sense checks.
-      ) && (isValidSession(incoming()) || incoming().keys().hasAny(['ratings', 'username', 'gameLocks', 'progressions', 'password', 'isAdmin', 'privileges', 'playStats']));
+      ) && (isValidSession(incoming()) || incoming().keys().hasAny(['ratings', 'username', 'gameLocks', 'progressions', 'password', 'isAdmin', 'privileges', 'playStats', 'agreedChatRules', 'agreedSiteRules']));
     }
 
     // Bans collection
@@ -59,6 +78,13 @@ service cloud.firestore {
       allow read: if isValidId(banId);
       allow list: if true;
       allow write: if isValidId(banId);
+    }
+
+    // Chat messages
+    match /messages/{messageId} {
+      allow read, list: if true;
+      allow create: if isValidMessage(incoming());
+      allow update, delete: if false;
     }
   }
 }
