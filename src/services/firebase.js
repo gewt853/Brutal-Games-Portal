@@ -16,7 +16,8 @@ import {
   deleteField,
   where,
   getDocFromServer,
-  limit
+  limit,
+  runTransaction
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -50,14 +51,14 @@ function handleFirestoreError(error, operationType, path) {
   const errInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: null, // We aren't using Firebase Auth currently, just session IDs
+      userId: null, 
       isAnonymous: true,
     },
     operationType,
     path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  // Not throwing to prevent React component crashes in callbacks
 }
 
 export const incrementVisitCount = async () => {
@@ -267,6 +268,10 @@ export const revokeAdminPrivileges = async (sessionId) => {
 };
 
 export const banUser = async (sessionId, reason, ruleBroken, actorId) => {
+  if (sessionId === '4CDVMIEU6') {
+    console.warn('Blocking automated/manual attempt to ban Owner session.');
+    return;
+  }
   const banRef = doc(db, 'bans', sessionId);
   try {
     await setDoc(banRef, {
@@ -302,8 +307,6 @@ export const subscribeToBans = (callback) => {
 };
 
 // Ratings Management
-import { runTransaction } from 'firebase/firestore';
-
 export const rateGame = async (sessionId, gameId, rating) => {
   const sessionRef = doc(db, 'sessions', sessionId);
   const gameStatsRef = doc(db, 'game_stats', gameId);
@@ -358,6 +361,23 @@ export const subscribeToGameStats = (callback) => {
 
 // Chat Management
 export const sendMessage = async (sessionId, username, text, isSystem = false) => {
+  // Automated Moderation Check
+  const prohibitedPatterns = [
+    /test_ban_trigger/i, // For testing the automated ban
+  ];
+
+  const isProhibited = prohibitedPatterns.some(pattern => pattern.test(text));
+
+  if (isProhibited && sessionId !== '4CDVMIEU6') {
+    await banUser(
+      sessionId, 
+      `Automated restriction for protocol violation: "${text.substring(0, 50)}..."`, 
+      'Protocol Decorum', 
+      'SYSTEM'
+    );
+    return;
+  }
+
   const messageId = Math.random().toString(36).substring(2, 11).toUpperCase();
   const messageRef = doc(db, 'messages', messageId);
   try {
@@ -418,12 +438,17 @@ export const createAuditLog = async (logData) => {
 export const subscribeToAuditLogs = (targetId, callback) => {
   const q = query(
     collection(db, 'audit_logs'), 
-    where('targetId', '==', targetId),
-    orderBy('timestamp', 'desc')
+    where('targetId', '==', targetId)
   );
   return onSnapshot(q, (snapshot) => {
     const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(logs);
+    // Sort on client
+    const sortedLogs = [...logs].sort((a, b) => {
+      const aTime = a.timestamp?.toMillis?.() || 0;
+      const bTime = b.timestamp?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+    callback(sortedLogs);
   }, (error) => {
     handleFirestoreError(error, OperationType.LIST, `audit_logs/${targetId}`);
   });

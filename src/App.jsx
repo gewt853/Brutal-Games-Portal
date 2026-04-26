@@ -26,6 +26,8 @@ import {
   sendMessage,
   subscribeToMessages,
   setAgreedChatRules,
+  setAgreedSiteRules,
+  subscribeToAuditLogs,
   db
 } from './services/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -84,6 +86,11 @@ export default function App() {
       const banned = await checkBanStatus(currentSessionId);
       if (banned && currentSessionId !== OWNER_ID) {
         setIsBanned(true);
+        // Fetch ban details so the user knows why
+        const banDoc = await getDoc(doc(db, 'bans', currentSessionId));
+        if (banDoc.exists()) {
+          setBans([{ id: currentSessionId, ...banDoc.data() }]);
+        }
         return;
       }
 
@@ -179,6 +186,7 @@ export default function App() {
     let unsubscribeAudit = () => {};
 
     if (activeTab === 'admin' && selectedUserSess) {
+      setAuditLogs([]);
       unsubscribeAudit = subscribeToAuditLogs(selectedUserSess.id, setAuditLogs);
     }
 
@@ -187,11 +195,10 @@ export default function App() {
       unsubscribeBans = subscribeToBans(setBans);
     }
 
-    // Chat Subscription (Only subscribe once or when tab is active if you want to optimize, but global live chat usually stays on)
+    // Chat Subscription (Only subscribe when tab is active)
     let unsubscribeMessages = () => {};
-    if (activeTab === 'chat' && !isChatSubscribed) {
+    if (activeTab === 'chat') {
       unsubscribeMessages = subscribeToMessages(setMessages);
-      setIsChatSubscribed(true);
     }
 
     return () => {
@@ -203,7 +210,7 @@ export default function App() {
       unsubscribeMessages();
       unsubscribeAudit();
     };
-  }, [isAdminAuthenticated, activeTab, isChatSubscribed, selectedUserSess]);
+  }, [isAdminAuthenticated, activeTab, selectedUserSess]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -496,7 +503,7 @@ export default function App() {
                   <div className="flex items-center gap-3 mb-1">
                     {!isMe && <span className="text-[9px] font-mono font-black text-indigo-400 uppercase">{msg.senderName}</span>}
                     <span className="text-[8px] font-mono text-slate-600 uppercase">
-                      {msg.timestamp?.toDate?.() ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---'}
+                      {msg.timestamp?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || '---'}
                     </span>
                     {isMe && <span className="text-[9px] font-mono font-black text-emerald-400 uppercase">Local Node</span>}
                   </div>
@@ -709,7 +716,7 @@ export default function App() {
                            <span className="text-lg font-black text-slate-800">{idx + 1}</span>
                            <div>
                               <div className="text-xs font-bold text-slate-200 uppercase">{s.game.title}</div>
-                              <div className="text-[9px] font-mono text-slate-600 uppercase">Last Played: {s.lastPlayed?.toDate?.().toLocaleDateString() || 'Recently'}</div>
+                              <div className="text-[9px] font-mono text-slate-600 uppercase">Last Played: {s.lastPlayed?.toDate?.()?.toLocaleDateString() || 'Recently'}</div>
                            </div>
                         </div>
                         <div className="text-xs font-mono text-indigo-400">{(s.duration / 3600).toFixed(1)}h</div>

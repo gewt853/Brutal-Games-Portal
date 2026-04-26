@@ -86,5 +86,12 @@ service cloud.firestore {
       allow create: if isValidMessage(incoming());
       allow update, delete: if false;
     }
+
+    // Audit logs
+    match /audit_logs/{logId} {
+      allow read, list: if true;
+      allow create: if isValidLog(incoming());
+      allow update, delete: if false;
+    }
   }
 }
