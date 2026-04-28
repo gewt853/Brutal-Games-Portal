@@ -158,5 +158,29 @@
     "genre": "Skill",
     "url": "https://dnrweqffuwjtx.cloudfront.net/games/2024/flash/worlds-hardest-game/index.html",
     "description": "Avoid blue dots and navigate through lethal mazes to reach the finish."
+  },
+  {
+    "id": "jetpack-joyride",
+    "title": "Jetpack Joyride",
+    "developer": "Halfbrick Studios",
+    "genre": "Arcade",
+    "url": "https://db.duckmath.org/html/jetpack_joyride/",
+    "description": "Suit up with a selection of the coolest jetpacks ever made and take to the skies as Barry Steakfries."
+  },
+  {
+    "id": "fireboy-watergirl",
+    "title": "Fireboy and Watergirl",
+    "developer": "Oslo Albet",
+    "genre": "Platformer",
+    "url": "https://db2.duckmath.org/2023/construct/179/fire-and-water/pre.html",
+    "description": "Control two elemental characters to solve puzzles and navigate through elemental temples."
+  },
+  {
+    "id": "sudoku",
+    "title": "Sudoku",
+    "developer": "Playpager",
+    "genre": "Puzzle",
+    "url": "https://playpager.com/embed/sudoku/index.html",
+    "description": "The classic logic-based number-placement puzzle."
   }
 ]

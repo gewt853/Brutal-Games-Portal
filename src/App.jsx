@@ -1890,7 +1890,12 @@ export default function App() {
                                   <h4 className="text-[10px] font-bold text-slate-200 truncate uppercase">{game.title}</h4>
                                   <p className="text-[8px] font-mono text-slate-600 truncate uppercase">{game.genre}</p>
                                 </div>
-                                <ArrowLeft size={12} className="text-slate-800 -rotate-180 group-hover:text-slate-400 transition-colors" />
+                                <div className="flex items-center gap-2">
+                                  {userProfile?.favorites?.[game.id] && (
+                                    <Heart size={10} className={`${t.text} fill-current`} />
+                                  )}
+                                  <ArrowLeft size={12} className="text-slate-800 -rotate-180 group-hover:text-slate-400 transition-colors" />
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -1909,7 +1914,14 @@ export default function App() {
                               onClick={() => handleGameSelect({ ...game, type: 'game' })}
                               className={`bg-slate-900/60 border border-slate-800 p-3 flex flex-col group cursor-pointer hover:${t.bg} transition-all relative overflow-hidden`}
                             >
-                              <div className={`absolute top-0 right-0 px-1.5 py-0.5 ${t.bg} text-[7px] font-mono ${t.text} uppercase tracking-tighter border-l border-b ${t.border}`}>NEW</div>
+                              <div className="absolute top-0 right-0 flex">
+                                {userProfile?.favorites?.[game.id] && (
+                                  <div className={`px-1.5 py-0.5 bg-slate-950/60 border-l border-b border-slate-800 ${t.text}`}>
+                                    <Heart size={8} className="fill-current" />
+                                  </div>
+                                )}
+                                <div className={`px-1.5 py-0.5 ${t.bg} text-[7px] font-mono ${t.text} uppercase tracking-tighter border-l border-b ${t.border}`}>NEW</div>
+                              </div>
                               <h4 className="text-[11px] font-black text-slate-100 mb-1 uppercase tracking-tighter">{game.title}</h4>
                               <p className="text-[8px] font-mono text-slate-500 uppercase">{game.developer || 'Unknown'}</p>
                             </div>
@@ -1993,9 +2005,10 @@ export default function App() {
                             )}
                             <button
                               onClick={(e) => handleToggleFavorite(e, game.id)}
-                              className={`p-1 bg-slate-950/80 border border-slate-800 rounded-sm transition-all hover:border-slate-600 ${userProfile?.favorites?.[game.id] ? t.text : 'text-slate-500 hover:text-slate-300'}`}
+                              className={`p-1.5 backdrop-blur-md rounded-sm transition-all border ${userProfile?.favorites?.[game.id] ? `${t.bg} ${t.border} ${t.text} shadow-[0_0_10px_rgba(0,0,0,0.5)]` : 'bg-slate-950/80 border-slate-800 text-slate-500 hover:border-slate-600 hover:text-slate-300'}`}
+                              title={userProfile?.favorites?.[game.id] ? "Remove from favorites" : "Add to favorites"}
                             >
-                              <Heart size={10} className={userProfile?.favorites?.[game.id] ? 'fill-current' : ''} />
+                              <Heart size={12} className={userProfile?.favorites?.[game.id] ? 'fill-current' : ''} />
                             </button>
                           </div>
                           
