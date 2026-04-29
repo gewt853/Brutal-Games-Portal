@@ -182,5 +182,101 @@
     "genre": "Puzzle",
     "url": "https://playpager.com/embed/sudoku/index.html",
     "description": "The classic logic-based number-placement puzzle."
+  },
+  {
+    "id": "redball-4",
+    "title": "Red Ball 4",
+    "developer": "FDG Entertainment",
+    "genre": "Platformer",
+    "url": "https://db.duckmath.org/html/redball_4/index.html",
+    "description": "Navigate through hazardous levels, defeat square minions, and save the world from being turned square."
+  },
+  {
+    "id": "flappy-bird",
+    "title": "Flappy Bird",
+    "developer": "Dong Nguyen",
+    "genre": "Arcade",
+    "url": "https://db.duckmath.org/html/flappy_bird/index.html",
+    "description": "Toss and flap your way through pipes in this notoriously difficult arcade sensation."
+  },
+  {
+    "id": "bloxorz",
+    "title": "Bloxorz",
+    "developer": "DX Interactive",
+    "genre": "Puzzle",
+    "url": "https://db.duckmath.org/html/bloxorz/index.html",
+    "description": "Roll a rectangular block through a series of stages to reach the hole without falling off."
+  },
+  {
+    "id": "little-alchemy-2",
+    "title": "Little Alchemy 2",
+    "developer": "Recloak",
+    "genre": "Puzzle",
+    "url": "https://db.duckmath.org/html/little_alchemy_2/index.html",
+    "description": "Mix elements together to create new items and discover the secrets of the universe."
+  },
+  {
+    "id": "doodle-jump",
+    "title": "Doodle Jump",
+    "developer": "Lima Sky",
+    "genre": "Arcade",
+    "url": "https://db.duckmath.org/html/doodle_jump/index.html",
+    "description": "Jump from platform to platform and avoid monsters in this endless climber."
+  },
+  {
+    "id": "pac-man",
+    "title": "Pac-Man",
+    "developer": "Namco",
+    "genre": "Arcade",
+    "url": "https://db.duckmath.org/html/pac_man/index.html",
+    "description": "Navigate Pac-Man through a maze, eating pellets and avoiding ghosts."
+  },
+  {
+    "id": "meat",
+    "title": "Meat",
+    "developer": "Original",
+    "genre": "Platformer",
+    "url": "https://db.duckmath.org/html/meat/index.html",
+    "description": "A challenging platformer where precision is key."
+  },
+  {
+    "id": "worlds-hardest-game-2",
+    "title": "The World's Hardest Game 2",
+    "developer": "Stephen Critoph",
+    "genre": "Skill",
+    "url": "https://db.duckmath.org/html/theworldshardestgame2/index.html",
+    "description": "The sequel to the frustratingly difficult original, with even more complex puzzles."
+  },
+  {
+    "id": "famidash",
+    "title": "Famidash",
+    "developer": "Unknown",
+    "genre": "Arcade",
+    "url": "https://db2.duckmath.org/2026/em/famidash/index.html",
+    "description": "High-speed arcade action with a retro feel."
+  },
+  {
+    "id": "bloons-td",
+    "title": "Bloons Tower Defense",
+    "developer": "Ninja Kiwi",
+    "genre": "Tower Defense",
+    "url": "https://db.duckmath.org/html/bloonstd/index.html",
+    "description": "The original tower defense game where you pop bloons with monkeys and towers."
+  },
+  {
+    "id": "bloons-td-2",
+    "title": "Bloons Tower Defense 2",
+    "developer": "Ninja Kiwi",
+    "genre": "Tower Defense",
+    "url": "https://db.duckmath.org/html/bloonstd2/index.html",
+    "description": "The sequel to the classic tower defense game with more maps and towers."
+  },
+  {
+    "id": "classicube",
+    "title": "ClassiCube",
+    "developer": "ClassiCube Team",
+    "genre": "Sandbox",
+    "url": "https://db2.duckmath.org/2024/cube/classicube/pre.html",
+    "description": "A custom Minecraft Classic compatible client that allows for creative building."
   }
 ]
