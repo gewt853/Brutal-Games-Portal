@@ -541,12 +541,12 @@ export default function App() {
     }
 
     return (
-      <div className="flex-1 flex flex-col h-full bg-slate-950/30 overflow-hidden">
+      <div id="chat-tab-content" role="tabpanel" aria-labelledby="tab-chat" className="flex-1 flex flex-col h-full bg-slate-950/30 overflow-hidden">
         {/* Chat Header */}
         <div className="p-6 border-b border-slate-800 flex items-center justify-between shrink-0">
            <div className="flex items-center gap-4">
               <div className={`w-10 h-10 ${t.bg} border ${t.border} flex items-center justify-center`}>
-                 <MessageSquare size={20} className={t.text} />
+                 <MessageSquare size={20} className={t.text} aria-hidden="true" />
               </div>
               <div>
                  <h2 className="text-lg font-black uppercase tracking-tighter text-white leading-none">GLOBAL TRANSMISSIONS</h2>
@@ -554,7 +554,7 @@ export default function App() {
               </div>
            </div>
            <div className="flex items-center gap-2">
-             <div className={`w-2 h-2 ${t.primary.replace('bg-', 'bg-')} rounded-full animate-pulse ${t.glow.replace('shadow-[', 'shadow-[0_0_8px_')}`}></div>
+             <div className={`w-2 h-2 ${t.primary.replace('bg-', 'bg-')} rounded-full animate-pulse ${t.glow.replace('shadow-[', 'shadow-[0_0_8px_')}`} aria-hidden="true"></div>
              <span className={`text-[10px] font-mono ${t.text} font-bold uppercase tracking-widest`}>Network Live</span>
            </div>
         </div>
@@ -680,11 +680,11 @@ export default function App() {
     const totalHours = (totalSeconds / 3600).toFixed(1);
 
     return (
-      <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30 font-sans">
+      <div id="profile-tab-content" role="tabpanel" aria-labelledby="tab-profile" className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30 font-sans">
         <div className="mb-10 border-b border-slate-800 pb-6 flex items-end justify-between">
           <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-none flex items-center justify-center border border-slate-900 ${t.primary} ${t.glow}`}>
-              <User size={24} className="text-white" />
+              <User size={24} className="text-white" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-slate-200 mb-1 leading-none">
@@ -763,72 +763,81 @@ export default function App() {
               </code>
             </div>
 
-            <div className="pt-6 border-t border-slate-800/50">
-              <label className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-4">Site Visual Theme</label>
-              <div className="grid grid-cols-5 gap-2">
-                {Object.keys(THEMES).map(themeKey => (
-                  <button
-                    key={themeKey}
-                    onClick={() => {
-                      setSiteTheme(themeKey);
-                      updateSiteTheme(sessionId, themeKey);
-                    }}
-                    className={`h-10 border flex items-center justify-center transition-all ${
-                      siteTheme === themeKey 
-                        ? 'border-white bg-slate-800' 
-                        : 'border-slate-800 bg-slate-950 hover:border-slate-600'
-                    }`}
-                    title={themeKey.toUpperCase()}
-                  >
-                    <div className={`w-4 h-4 rounded-full ${THEMES[themeKey].primary} shadow-sm`}></div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div className="pt-6 border-t border-slate-800/50 flex flex-col gap-4">
               <div>
-                <label className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2 font-bold">Account Security Key</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="password"
-                    placeholder={userProfile?.password ? "••••••••" : "Set Account Password..."}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.target.value) {
-                        setUserPassword(sessionId, e.target.value);
-                        e.target.value = '';
-                        setIsFirstLogin(false);
-                      }
-                    }}
-                    className={`flex-1 bg-slate-950 border border-slate-800 p-3 text-slate-200 font-mono text-sm focus:${t.border.replace('border-', 'border-')} outline-none transition-all`}
-                  />
-                  <button 
-                    onClick={(e) => {
-                      const input = e.currentTarget.previousSibling;
-                      if (input.value) {
-                        setUserPassword(sessionId, input.value);
-                        input.value = '';
-                        setIsFirstLogin(false);
-                      }
-                    }}
-                    className={`px-4 ${t.primary} text-[10px] text-white font-bold uppercase ${t.hover} transition-all font-mono`}
-                  >
-                    UPDATE
-                  </button>
+                <h3 id="theme-selection-label" className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-4">Site Visual Theme</h3>
+                <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-labelledby="theme-selection-label">
+                  {Object.keys(THEMES).map(themeKey => (
+                    <button
+                      key={themeKey}
+                      role="radio"
+                      aria-checked={siteTheme === themeKey}
+                      onClick={() => {
+                        setSiteTheme(themeKey);
+                        updateSiteTheme(sessionId, themeKey);
+                      }}
+                      className={`h-10 border flex items-center justify-center transition-all ${
+                        siteTheme === themeKey 
+                          ? 'border-white bg-slate-800' 
+                          : 'border-slate-800 bg-slate-950 hover:border-slate-600'
+                      }`}
+                      aria-label={`${themeKey} theme`}
+                      title={themeKey.toUpperCase()}
+                    >
+                      <div className={`w-4 h-4 rounded-full ${THEMES[themeKey].primary} shadow-sm`} aria-hidden="true"></div>
+                    </button>
+                  ))}
                 </div>
               </div>
-              
-              <button 
-                onClick={() => {
-                  sessionStorage.removeItem('nebula_auth_confirmed');
-                  setShowNameEntry(true);
-                  setShowPasswordLogin(!!userProfile?.password);
-                  setPendingSession(userProfile?.password ? userProfile : null);
-                }}
-                className={`w-full py-3 bg-slate-950 border border-slate-800 text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em] hover:${t.border} hover:${t.text} transition-all`}
-              >
-                Lock Terminal / Change Identity
-              </button>
+
+              <div className="pt-6 border-t border-slate-800/50 flex flex-col gap-4">
+                <div>
+                  <label htmlFor="account-password-input" className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2 font-bold">Account Security Key</label>
+                  <div className="flex gap-2">
+                    <input 
+                      id="account-password-input"
+                      type="password"
+                      placeholder={userProfile?.password ? "••••••••" : "Set Account Password..."}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.target.value) {
+                          setUserPassword(sessionId, e.target.value);
+                          e.target.value = '';
+                          setIsFirstLogin(false);
+                        }
+                      }}
+                      className={`flex-1 bg-slate-950 border border-slate-800 p-3 text-slate-200 font-mono text-sm focus:${t.border.replace('border-', 'border-')} outline-none transition-all`}
+                      aria-label="Set or update your account password"
+                    />
+                    <button 
+                      onClick={(e) => {
+                        const input = e.currentTarget.previousSibling;
+                        if (input.value) {
+                          setUserPassword(sessionId, input.value);
+                          input.value = '';
+                          setIsFirstLogin(false);
+                        }
+                      }}
+                      className={`px-4 ${t.primary} text-[10px] text-white font-bold uppercase ${t.hover} transition-all font-mono`}
+                      aria-label="Update password"
+                    >
+                      UPDATE
+                    </button>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    sessionStorage.removeItem('nebula_auth_confirmed');
+                    setShowNameEntry(true);
+                    setShowPasswordLogin(!!userProfile?.password);
+                    setPendingSession(userProfile?.password ? userProfile : null);
+                  }}
+                  className={`w-full py-3 bg-slate-950 border border-slate-800 text-[10px] font-mono text-slate-400 uppercase tracking-[0.2em] hover:${t.border} hover:${t.text} transition-all`}
+                  aria-label="Lock your current session or change to a different identity"
+                >
+                  Lock Terminal / Change Identity
+                </button>
+              </div>
             </div>
           </div>
 
@@ -954,11 +963,11 @@ export default function App() {
     const displaySess = sessions.find(s => s.id === selectedUserSess?.id) || selectedUserSess;
 
     return (
-      <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
+      <div id="admin-tab-content" role="tabpanel" aria-labelledby="tab-admin" className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
         <div className="mb-10 border-b border-slate-800 pb-6 flex items-end justify-between">
           <div className="flex items-center gap-4">
             <div className={`w-12 h-12 rounded-none flex items-center justify-center border border-slate-900 ${t.primary} ${t.glow}`}>
-              <Lock size={24} className="text-white" />
+              <Lock size={24} className="text-white" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-slate-200 mb-1 leading-none">
@@ -1312,7 +1321,7 @@ export default function App() {
   };
 
   const renderProxies = () => (
-    <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
+    <div id="proxies-tab-content" role="tabpanel" aria-labelledby="tab-proxies" className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/30">
       <div className="mb-10 border-b border-slate-800 pb-6 flex items-end justify-between">
         <div className="flex items-center gap-4">
           <div className={`w-12 h-12 rounded-none flex overflow-hidden border border-slate-900 ${t.glow}`}>
@@ -1333,8 +1342,9 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`flex items-center gap-2 px-2 py-0.5 ${t.bg} border ${t.border} rounded-sm hover:bg-slate-800 transition-all group`}
+                aria-label="Request a new proxy node"
               >
-                <MessageSquarePlus size={10} className={`${t.text} group-hover:text-white`} />
+                <MessageSquarePlus size={10} className={`${t.text} group-hover:text-white`} aria-hidden="true" />
                 <span className={`text-[9px] font-mono ${t.text} font-bold tracking-wider uppercase`}>REQUEST NODE</span>
               </a>
             </div>
@@ -1437,6 +1447,8 @@ export default function App() {
     return (
       <div 
         className="h-screen w-full bg-slate-950 flex items-center justify-center p-6"
+        role="main"
+        aria-labelledby="entry-title"
         style={{
           backgroundImage: "linear-gradient(rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.95)), url('https://mir-s3-cdn-cf.behance.net/project_modules/disp/9c3404112981173.601ebcc1dba2d.gif')",
           backgroundSize: 'cover',
@@ -1444,16 +1456,16 @@ export default function App() {
         }}
       >
         <div className="max-w-md w-full bg-slate-900/80 border border-slate-800 p-10 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
+          <div className="absolute top-0 right-0 p-4 opacity-10" aria-hidden="true">
             <User size={120} />
           </div>
           
           <div className="flex items-center gap-4 mb-8">
             <div className={`w-10 h-10 border ${t.border.replace('border-', 'border-')} flex items-center justify-center ${t.bg}`}>
-              <User size={20} className={t.text} />
+              <User size={20} className={t.text} aria-hidden="true" />
             </div>
             <div>
-              <h1 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">
+              <h1 id="entry-title" className="text-2xl font-black uppercase tracking-tighter text-white leading-none">
                 {userProfile?.username ? `Welcome Back to Nebula Network ${userProfile.username}` : 'Welcome to Nebula Network'}
               </h1>
               <p className={`text-[9px] font-mono ${t.text} uppercase tracking-[0.2em] mt-1`}>
@@ -1579,16 +1591,31 @@ export default function App() {
 
   const RatingStars = ({ rating, max = 5, onRate = null, size = 12 }) => {
     return (
-      <div className="flex gap-0.5">
+      <div className="flex gap-0.5" role="img" aria-label={`Rating: ${rating.toFixed(1)} out of ${max} stars`}>
         {[...Array(max)].map((_, i) => {
           const starValue = i + 1;
           const isActive = starValue <= Math.round(rating);
+          
+          if (onRate) {
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => onRate(starValue)}
+                className={`${isActive ? `${t.text} fill-current` : 'text-slate-700'} cursor-pointer hover:scale-125 transition-transform bg-transparent border-none p-0`}
+                aria-label={`Rate ${starValue} star${starValue === 1 ? '' : 's'}`}
+              >
+                <Star size={size} className={isActive ? 'fill-current' : ''} />
+              </button>
+            );
+          }
+
           return (
             <Star 
               key={i} 
               size={size} 
-              className={`${isActive ? `${t.text} fill-current` : 'text-slate-700' } ${onRate ? 'cursor-pointer hover:scale-125 transition-transform' : ''}`}
-              onClick={() => onRate && onRate(starValue)}
+              className={`${isActive ? `${t.text} fill-current` : 'text-slate-700' }`}
+              aria-hidden="true"
             />
           );
         })}
@@ -1616,17 +1643,23 @@ export default function App() {
     >
       {/* Ban Reason Modal */}
       {showBanModal && (
-        <div className="fixed inset-0 z-[110] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6">
+        <div 
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ban-modal-title"
+          className="fixed inset-0 z-[110] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6"
+        >
           <div className="max-w-md w-full bg-slate-900 border border-red-900/30 p-10 shadow-2xl">
             <div className="flex items-center gap-4 mb-8 text-red-500">
-              <ShieldCheck size={24} />
-              <h1 className="text-xl font-black uppercase tracking-tighter">Restriction Directive</h1>
+              <ShieldCheck size={24} aria-hidden="true" />
+              <h1 id="ban-modal-title" className="text-xl font-black uppercase tracking-tighter">Restriction Directive</h1>
             </div>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Protocol Violation</label>
+                <label htmlFor="ban-rule-select" className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Protocol Violation</label>
                 <select 
+                  id="ban-rule-select"
                   value={banRule}
                   onChange={(e) => setBanRule(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 p-3 text-slate-200 font-mono text-xs focus:border-red-500 outline-none"
@@ -1639,8 +1672,9 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Detailed Reason (Internal)</label>
+                <label htmlFor="ban-reason-text" className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Detailed Reason (Internal)</label>
                 <textarea 
+                  id="ban-reason-text"
                   value={banReason}
                   onChange={(e) => setBanReason(e.target.value)}
                   placeholder="Elaborate on the reason for restriction..."
@@ -1652,6 +1686,7 @@ export default function App() {
                  <button 
                    onClick={() => { setShowBanModal(null); setBanReason(''); setBanRule(''); }}
                    className="flex-1 py-3 border border-slate-800 text-[10px] font-mono text-slate-500 uppercase hover:text-white"
+                   aria-label="Cancel ban action"
                  >
                    Abort
                  </button>
@@ -1659,6 +1694,7 @@ export default function App() {
                    onClick={handleBanConfirm}
                    disabled={!banRule || !banReason}
                    className="flex-1 py-3 bg-red-600 text-[10px] text-white font-bold uppercase tracking-widest hover:bg-red-500 disabled:opacity-30 disabled:cursor-not-allowed"
+                   aria-label="Confirm and execute ban"
                  >
                    Execute Ban
                  </button>
@@ -1670,17 +1706,22 @@ export default function App() {
 
       {/* Locked Game Modal */}
       {lockedGameAttempt && (
-        <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6">
+        <div 
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="lock-modal-title"
+          className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6"
+        >
           <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-10 shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none" aria-hidden="true">
                 <Lock size={120} />
              </div>
              
             <div className="flex items-center gap-4 mb-8">
               <div className={`w-10 h-10 border ${t.border.replace('border-', 'border-')} flex items-center justify-center ${t.bg}`}>
-                <Lock size={20} className={t.text} />
+                <Lock size={20} className={t.text} aria-hidden="true" />
               </div>
-              <h2 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">Access Restricted</h2>
+              <h2 id="lock-modal-title" className="text-2xl font-black uppercase tracking-tighter text-white leading-none">Access Restricted</h2>
             </div>
             
             <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-6">
@@ -1689,17 +1730,19 @@ export default function App() {
 
             <form onSubmit={handleLockVerify} className="relative z-10">
               <div className="mb-6">
-                <label className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Security Token</label>
+                <label htmlFor="lock-password-input" className="block text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">Security Token</label>
                 <input
+                  id="lock-password-input"
                   type="password"
                   autoFocus
                   value={lockPasswordInput}
                   onChange={(e) => setLockPasswordInput(e.target.value)}
                   className={`w-full bg-slate-950 border ${lockError ? 'border-red-500' : 'border-slate-800'} p-3 text-slate-200 font-mono text-sm focus:${t.border.replace('border-', 'border-')} outline-none transition-all placeholder:text-slate-800`}
                   placeholder="••••••••"
+                  aria-invalid={lockError}
                 />
                 {lockError && (
-                  <p className="text-[10px] text-red-500 mt-2 font-mono uppercase tracking-widest">Verification Failed. Invalid Cipher.</p>
+                  <p className="text-[10px] text-red-500 mt-2 font-mono uppercase tracking-widest" aria-live="assertive">Verification Failed. Invalid Cipher.</p>
                 )}
               </div>
               
@@ -1708,12 +1751,14 @@ export default function App() {
                   type="button"
                   onClick={() => setLockedGameAttempt(null)}
                   className="flex-1 py-3 border border-slate-800 text-[10px] text-slate-500 font-bold uppercase tracking-widest hover:text-white hover:border-slate-600 transition-all"
+                  aria-label="Cancel and return"
                 >
                   ABORT
                 </button>
                 <button
                   type="submit"
                   className={`flex-1 py-3 ${t.primary} text-[10px] text-white font-bold uppercase tracking-widest ${t.hover} transition-all ${t.glow}`}
+                  aria-label="Decrypt and unlock game"
                 >
                   DECRYPT
                 </button>
@@ -1739,51 +1784,80 @@ export default function App() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Navigation Sidebar */}
-        <nav className="w-16 md:w-20 border-r border-slate-800 bg-slate-950/40 backdrop-blur-sm flex flex-col items-center py-8 shrink-0 z-40">
+        <nav 
+          role="tablist"
+          aria-label="Side navigation"
+          className="w-16 md:w-20 border-r border-slate-800 bg-slate-950/40 backdrop-blur-sm flex flex-col items-center py-8 shrink-0 z-40"
+        >
           <button
+            role="tab"
+            aria-selected={activeTab === 'games'}
+            aria-controls="games-tab-content"
+            id="tab-games"
             onClick={() => handleSidebarClick('games')}
             className={`p-4 transition-all ${activeTab === 'games' ? `${t.text} scale-110 ${t.glow}` : 'text-slate-600 hover:text-slate-400'}`}
             title="Games"
+            aria-label="Games Section"
           >
-            <Gamepad2 size={24} strokeWidth={activeTab === 'games' ? 3 : 2} />
+            <Gamepad2 size={24} strokeWidth={activeTab === 'games' ? 3 : 2} aria-hidden="true" />
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'proxies'}
+            aria-controls="proxies-tab-content"
+            id="tab-proxies"
             onClick={() => handleSidebarClick('proxies')}
             className={`p-4 mt-4 transition-all ${activeTab === 'proxies' ? `${t.text} scale-110 ${t.glow}` : 'text-slate-600 hover:text-slate-400'}`}
             title="Proxies"
+            aria-label="Proxies Section"
           >
-            <ShieldCheck size={24} strokeWidth={activeTab === 'proxies' ? 3 : 2} />
+            <ShieldCheck size={24} strokeWidth={activeTab === 'proxies' ? 3 : 2} aria-hidden="true" />
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'chat'}
+            aria-controls="chat-tab-content"
+            id="tab-chat"
             onClick={() => handleSidebarClick('chat')}
             className={`p-4 mt-4 transition-all ${activeTab === 'chat' ? `${t.text} scale-110 ${t.glow}` : 'text-slate-600 hover:text-slate-400'}`}
             title="Chat"
+            aria-label="Chat Section"
           >
-            <MessageSquare size={24} strokeWidth={activeTab === 'chat' ? 3 : 2} />
+            <MessageSquare size={24} strokeWidth={activeTab === 'chat' ? 3 : 2} aria-hidden="true" />
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'profile'}
+            aria-controls="profile-tab-content"
+            id="tab-profile"
             onClick={() => handleSidebarClick('profile')}
             className={`p-4 mt-4 transition-all ${activeTab === 'profile' ? `${t.text} scale-110 ${t.glow}` : 'text-slate-600 hover:text-slate-400'}`}
             title="Profile"
+            aria-label="Profile Section"
           >
-            <User size={24} strokeWidth={activeTab === 'profile' ? 3 : 2} />
+            <User size={24} strokeWidth={activeTab === 'profile' ? 3 : 2} aria-hidden="true" />
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'admin'}
+            aria-controls="admin-tab-content"
+            id="tab-admin"
             onClick={() => handleSidebarClick('admin')}
             className={`p-4 mt-4 transition-all ${activeTab === 'admin' ? `${t.text} scale-110 ${t.glow}` : 'text-slate-600 hover:text-slate-400'}`}
             title="Admin"
+            aria-label="Admin Section"
           >
-            <Lock size={24} strokeWidth={activeTab === 'admin' ? 3 : 2} />
+            <Lock size={24} strokeWidth={activeTab === 'admin' ? 3 : 2} aria-hidden="true" />
           </button>
         </nav>
 
         <main className="flex-1 flex overflow-hidden relative border-l border-slate-900">
           {!activeItem ? (
             activeTab === 'games' ? (
-            <div className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/20">
+            <div id="games-tab-content" role="tabpanel" aria-labelledby="tab-games" className="flex-1 p-6 md:p-10 w-full max-w-6xl mx-auto overflow-y-auto bg-slate-950/20">
                 <div className="mb-10 border-b border-slate-800 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-none flex overflow-hidden border border-slate-900 ${t.glow}`}>
+                <div className={`w-12 h-12 rounded-none flex overflow-hidden border border-slate-900 ${t.glow}`} aria-hidden="true">
                   <div className="w-1/2 h-full bg-white"></div>
                   <div className={`w-1/2 h-full ${t.primary}`}></div>
                 </div>
@@ -1792,13 +1866,13 @@ export default function App() {
                    GAMES<span className={t.primaryText}>.</span>
                  </h1>
                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                   <p className={`text-[10px] font-mono ${t.text} tracking-[0.2em] uppercase`}>
+                   <p className={`text-[10px] font-mono ${t.text} tracking-[0.2em] uppercase`} aria-label={`${gamesData.length} games available`}>
                      {gamesData.length} games available
                    </p>
                    <div className="h-4 w-px bg-slate-800 hidden sm:block"></div>
                    <div className="flex items-center gap-3">
-                     <div className={`flex items-center gap-2 px-2 py-0.5 ${t.bg} border ${t.border} rounded-sm`}>
-                       <TrendingUp size={10} className={t.text} />
+                     <div className={`flex items-center gap-2 px-2 py-0.5 ${t.bg} border ${t.border} rounded-sm`} aria-label={`${visitCount.toLocaleString()} total visits`}>
+                       <TrendingUp size={10} className={t.text} aria-hidden="true" />
                        <span className={`text-[10px] font-mono ${t.text} font-bold tracking-wider`}>
                          {visitCount.toLocaleString()} VISITS
                        </span>
@@ -1809,8 +1883,9 @@ export default function App() {
                        target="_blank"
                        rel="noopener noreferrer"
                        className={`flex items-center gap-2 px-2 py-0.5 ${t.bg} border ${t.border} rounded-sm hover:bg-slate-800 transition-all group`}
+                       aria-label="Request a new game"
                      >
-                       <MessageSquarePlus size={10} className={`${t.text} group-hover:text-white`} />
+                       <MessageSquarePlus size={10} className={`${t.text} group-hover:text-white`} aria-hidden="true" />
                        <span className={`text-[9px] font-mono ${t.text} font-bold tracking-wider uppercase`}>REQUEST GAME</span>
                      </a>
                    </div>
@@ -1819,21 +1894,24 @@ export default function App() {
                   </div>
                   <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="relative w-full md:w-64">
-                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
                       <input 
                         type="text"
                         placeholder="SEARCH GAMES..."
                         value={gameSearchQuery}
                         onChange={(e) => setGameSearchQuery(e.target.value)}
                         className={`bg-slate-900 border border-slate-800 py-2 pl-10 pr-4 text-[10px] font-mono text-slate-200 focus:${t.border.replace('border-', 'border-')} outline-none transition-all w-full uppercase tracking-tighter`}
+                        aria-label="Search games"
                       />
                     </div>
                     <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-sm">
-                      <span className="text-[8px] font-mono text-slate-500 uppercase">Sort:</span>
+                      <label htmlFor="game-sort" className="text-[8px] font-mono text-slate-500 uppercase">Sort:</label>
                       <select
+                        id="game-sort"
                         value={gameSortOption}
                         onChange={(e) => setGameSortOption(e.target.value)}
                         className="bg-transparent text-[10px] font-mono text-slate-200 outline-none cursor-pointer uppercase"
+                        aria-label="Sort games by"
                       >
                         <option value="title" className="bg-slate-950">Title</option>
                         <option value="developer" className="bg-slate-950">Developer</option>
@@ -1845,8 +1923,10 @@ export default function App() {
                     <button
                       onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                       className={`flex items-center gap-2 px-3 py-1.5 border transition-all rounded-sm ${showFavoritesOnly ? `${t.bg} ${t.border} ${t.text}` : 'bg-slate-900 border-slate-800 text-slate-500'}`}
+                      aria-label={showFavoritesOnly ? "Show all games" : "Show only favorite games"}
+                      aria-pressed={showFavoritesOnly}
                     >
-                      <Heart size={14} className={showFavoritesOnly ? 'fill-current' : ''} />
+                      <Heart size={14} className={showFavoritesOnly ? 'fill-current' : ''} aria-hidden="true" />
                       <span className="text-[10px] font-mono uppercase tracking-widest hidden sm:inline">Favorites</span>
                     </button>
 
@@ -1974,6 +2054,7 @@ export default function App() {
                         key={game.id}
                         role="button"
                         tabIndex={0}
+                        aria-label={`Play ${game.title} by ${game.developer}. Genre: ${game.genre}. ${isLocked ? 'Game is restricted.' : 'Game is available.'}`}
                         onClick={() => handleGameSelect({ ...game, type: 'game' })}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -1983,9 +2064,9 @@ export default function App() {
                         }}
                         className={`bg-slate-900/60 backdrop-blur-sm border border-slate-800 p-2 flex flex-col text-left group cursor-pointer transition-all hover:${t.border} hover:${t.bg} h-full relative overflow-hidden`}
                       >
-                        <div className={`absolute top-0 left-0 w-1 h-0 group-hover:h-full ${t.primary} transition-all duration-300`}></div>
+                        <div className={`absolute top-0 left-0 w-1 h-0 group-hover:h-full ${t.primary} transition-all duration-300`} aria-hidden="true"></div>
                         
-                        <div className="w-full bg-slate-800 mb-3 relative overflow-hidden aspect-video flex justify-center items-center shadow-inner">
+                        <div className="w-full bg-slate-800 mb-3 relative overflow-hidden aspect-video flex justify-center items-center shadow-inner" aria-hidden="true">
                           <div className={`absolute inset-0 bg-gradient-to-br ${t.bg} opacity-20`}></div>
                           
                           <div className={`absolute -right-2 -bottom-2 font-black text-6xl text-slate-700/20 z-0 leading-none group-hover:${t.text.replace('text-', 'text-')}/10 transition-colors`}>
@@ -1999,16 +2080,17 @@ export default function App() {
 
                           <div className="absolute top-2 right-2 flex flex-col gap-1 z-20">
                             {isLocked && (
-                              <div className={`p-1 ${t.bg} border ${t.border} rounded-sm`}>
+                              <div className={`p-1 ${t.bg} border ${t.border} rounded-sm`} aria-label="Game is locked">
                                 <Lock size={10} className={t.text} />
                               </div>
                             )}
                             <button
                               onClick={(e) => handleToggleFavorite(e, game.id)}
                               className={`p-1.5 backdrop-blur-md rounded-sm transition-all border ${userProfile?.favorites?.[game.id] ? `${t.bg} ${t.border} ${t.text} shadow-[0_0_10px_rgba(0,0,0,0.5)]` : 'bg-slate-950/80 border-slate-800 text-slate-500 hover:border-slate-600 hover:text-slate-300'}`}
+                              aria-label={userProfile?.favorites?.[game.id] ? `Remove ${game.title} from favorites` : `Add ${game.title} to favorites`}
                               title={userProfile?.favorites?.[game.id] ? "Remove from favorites" : "Add to favorites"}
                             >
-                              <Heart size={12} className={userProfile?.favorites?.[game.id] ? 'fill-current' : ''} />
+                              <Heart size={12} className={userProfile?.favorites?.[game.id] ? 'fill-current' : ''} aria-hidden="true" />
                             </button>
                           </div>
                           
@@ -2041,10 +2123,10 @@ export default function App() {
                           
                           <div className={`mt-auto pt-2 border-t border-slate-800/50 flex items-center justify-between text-[10px] font-mono uppercase tracking-widest`}>
                             <span className={`${t.text} font-bold flex items-center gap-1.5`}>
-                              <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse'}`}></div>
+                              <div className={`w-1.5 h-1.5 rounded-full ${isLocked ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse'}`} aria-hidden="true"></div>
                               {isLocked ? 'Restricted' : 'Active'}
                             </span>
-                            <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 ${t.text}`}>
+                            <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 ${t.text}`} aria-hidden="true">
                               <Play size={10} className="fill-current" />
                             </div>
                           </div>
@@ -2076,20 +2158,22 @@ export default function App() {
                   <>
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-800 shrink-0">
                       <div className="flex items-center gap-4">
-                        <div className="flex gap-2">
+                        <div className="flex gap-2" role="toolbar" aria-label="Game controls">
                           <button 
                             onClick={handleCloseItem}
                             className={`flex items-center justify-center w-8 h-8 bg-slate-900 border border-slate-700 hover:${t.border} text-slate-400 hover:${t.text} transition-colors shadow-sm cursor-pointer`}
                             title="Go Back"
+                            aria-label="Close game and return to menu"
                           >
-                            <ArrowLeft size={16} />
+                            <ArrowLeft size={16} aria-hidden="true" />
                           </button>
                           <button 
                             onClick={toggleFullscreen}
                             className={`flex items-center justify-center w-8 h-8 bg-slate-900 border border-slate-700 hover:${t.border} text-slate-400 hover:${t.text} transition-colors shadow-sm cursor-pointer`}
                             title="Fullscreen"
+                            aria-label="Toggle Fullscreen mode"
                           >
-                            <Maximize size={16} />
+                            <Maximize size={16} aria-hidden="true" />
                           </button>
                           <a
                             href={activeItem.url}
@@ -2097,19 +2181,20 @@ export default function App() {
                             rel="noopener noreferrer"
                             className={`flex items-center justify-center w-8 h-8 ${t.bg} border ${t.border} hover:${t.primary} hover:border-transparent text-slate-300 hover:text-white transition-all shadow-sm cursor-pointer`}
                             title="Open in New Tab (Fallback)"
+                            aria-label="Open game in a new browser tab"
                           >
-                            <ExternalLink size={14} />
+                            <ExternalLink size={14} aria-hidden="true" />
                           </a>
                         </div>
-                        <div className="h-6 w-px bg-slate-800"></div>
+                        <div className="h-6 w-px bg-slate-800" aria-hidden="true"></div>
                         <div className="flex flex-col">
                           <h2 className="text-lg font-black tracking-tighter uppercase text-slate-200 truncate leading-none mb-1">
                             {activeItem.title || activeItem.name}
                           </h2>
                           {isGame && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2" aria-label={`Average rating: ${avgRating.toFixed(1)} out of 5 stars`}>
                               <RatingStars rating={avgRating} />
-                              <span className="text-[9px] font-mono text-slate-500">({stats?.ratingCount || 0})</span>
+                              <span className="text-[9px] font-mono text-slate-500" aria-hidden="true">({stats?.ratingCount || 0})</span>
                             </div>
                           )}
                         </div>
@@ -2122,10 +2207,10 @@ export default function App() {
                             <RatingStars rating={userRating} onRate={(r) => rateGame(sessionId, activeItem.id, r)} size={14} />
                           </div>
                         )}
-                        <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono tracking-widest uppercase">
-                          <Info size={14} className={t.text} />
+                        <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono tracking-widest uppercase" aria-label={`Game info: ${activeItem.genre || 'Secure Node'} by ${activeItem.developer || activeItem.id}`}>
+                          <Info size={14} className={t.text} aria-hidden="true" />
                           <span>{activeItem.genre || 'Secure Node'}</span>
-                          <span className="text-slate-700">//</span>
+                          <span className="text-slate-700" aria-hidden="true">//</span>
                           <span>{activeItem.developer || activeItem.id}</span>
                         </div>
                       </div>
